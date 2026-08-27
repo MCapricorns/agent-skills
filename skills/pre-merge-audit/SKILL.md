@@ -1,7 +1,6 @@
 ---
 name: pre-merge-audit
-description: Exhaustive pre-merge audit of a branch, PR, MR, or diff — bugs, security vulnerabilities, breaking changes, developer-experience regressions, feature-gate leaks, and structural code quality. With explicit cleanup intent before committing, also proves and applies safe dead-code, duplication, and complexity removal. Use whenever the user asks to review, audit, clean up, or scrutinize changes before merging or committing — "review this branch", "audit this PR", "clean this up before we commit", "deep/harsh/strict review", "code quality audit" — even when phrased casually.
-when_to_use: Trigger on any pre-merge review request — "review this branch/PR/diff", "audit these changes", "看看这个分支能不能合", "严格审查", "deep review", "code quality audit" — and on pre-commit cleanup requests — "clean up before committing", "提交前清理", "remove the dead code", "dedupe then submit". Skip single-file quick questions, pure formatting, and lightweight style nitpicks.
+description: Exhaustive pre-merge audit of a branch, PR, MR, or diff — correctness and security bugs, breaking changes, developer-experience regressions, feature-gate leaks, and structural code quality (oversized files, tangled branching, weak abstractions, missed simplifications). With explicit cleanup intent before committing, also proves and applies safe dead-code, duplication, and complexity removal. Use whenever the user asks to review, audit, clean up, or scrutinize changes before merging or committing — "review this branch", "audit this PR", "clean this up before we commit", "deep review", "strict review", "code quality audit" — even when phrased casually. Skip single-file quick questions, pure formatting, and lightweight style nitpicks.
 ---
 
 # Pre-Merge Audit
