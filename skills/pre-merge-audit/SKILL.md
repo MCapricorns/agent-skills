@@ -1,7 +1,7 @@
 ---
 name: pre-merge-audit
-description: Exhaustive pre-merge audit of a branch, PR, MR, or diff — bugs, security vulnerabilities, breaking changes, developer-experience regressions, feature-gate leaks, and structural code quality (oversized files, tangled branching, weak abstractions, missed simplifications). Use whenever the user asks to review, audit, or scrutinize changes before merging — "review this branch", "audit this PR", "deep/harsh/strict review", "code quality audit" — even when phrased casually.
-when_to_use: Trigger on any pre-merge review request — "review this branch/PR/diff", "audit these changes", "看看这个分支能不能合", "严格审查", "deep review", "code quality audit". Skip single-file quick questions, pure formatting, and lightweight style nitpicks.
+description: Exhaustive pre-merge audit of a branch, PR, MR, or diff — bugs, security vulnerabilities, breaking changes, developer-experience regressions, feature-gate leaks, and structural code quality (oversized files, tangled branching, weak abstractions, missed simplifications). With explicit cleanup intent before committing, also proves and applies safe dead-code, duplication, and complexity removal. Use whenever the user asks to review, audit, clean up, or scrutinize changes before merging or committing — "review this branch", "audit this PR", "clean this up before we commit", "deep/harsh/strict review", "code quality audit" — even when phrased casually.
+when_to_use: Trigger on any pre-merge review request — "review this branch/PR/diff", "audit these changes", "看看这个分支能不能合", "严格审查", "deep review", "code quality audit" — and on pre-commit cleanup requests — "clean up before committing", "提交前清理", "remove the dead code", "dedupe then submit". Skip single-file quick questions, pure formatting, and lightweight style nitpicks.
 ---
 
 # Pre-Merge Audit
@@ -10,6 +10,8 @@ A single-pass, maximum-rigor review of a checked-out branch. Every run audits tw
 
 1. **Correctness & security** — does the change break things or open holes?
 2. **Structure & maintainability** — even if it works, is it the right shape?
+
+When the user explicitly authorizes cleanup before committing, a third pass applies proven dead-code, duplication, and complexity cuts (Part 3).
 
 Be extremely thorough, rigorous, careful, and attentive. Measure twice, cut once. Let nothing real slip through — but never invent or inflate findings to look busy.
 
@@ -159,6 +161,46 @@ When you identify a structural problem, prefer suggestions like:
 
 Do not settle for "maybe rename this" feedback when the real issue is structural.
 Do not settle for a merely cleaner version of the same messy idea when a much simpler idea is plausibly reachable.
+
+## Part 3 — Pre-commit cleanup (only with explicit cleanup intent)
+
+By default this skill audits and reports; it never edits. A request that explicitly authorizes cleanup — "clean this up before we commit", "remove the dead code", "dedupe and simplify, then submit" — authorizes applying every safe, proven, in-scope cut end to end, without per-item approval. Do not stop at a candidate list when a safe cut is available. Finding no safe cut and making zero edits is a valid outcome; never force a deletion to look productive.
+
+### A candidate is not a deletion
+
+Static tools, search counts, apparent duplication, and earlier reconnaissance only produce leads. Re-read load-bearing files and repeat the decisive searches yourself; never inherit deletion proof from a prior report. Remove code only after proving all of:
+
+- **Consumers** — real production consumers, distinguished from support-only references and ambiguous dynamic/plugin/reflection/codegen entrypoints. Search symbols, paths, strings, alternate call forms, docs, tests, and package metadata.
+- **Reachability** — traced through entrypoints, configuration, registries, dynamic imports, dependency injection, events, queues, persistence, processes, and protocols. Start from central production surfaces, not isolated unused-looking symbols.
+- **Ownership & history** — who creates, mutates, cancels, disposes, and observes each piece of state; the commit and decision history still explains why the code exists.
+- **Boundaries** — generated, vendored, fixture, migration, and published surfaces are out of bounds.
+
+Keep a candidate when a real consumer exists, dynamic reachability is unresolved, the original rationale still holds, the complexity merely moves elsewhere, or the cut is actually a product/API decision. State what behavior the cut gives up, even when the answer is "nothing observable".
+
+### Hunt list
+
+Dead exports, symbols, and config; unconsumed APIs; duplicate or near-repeated implementations (compare observable contracts, invariants, ordering, failure handling, and side effects — not text similarity); duplicate facts or lifecycle state; speculative abstractions; forwarding-only layers; abandoned compatibility residue; and hand-rolled infrastructure the platform or an installed dependency already provides.
+
+### Protected surfaces
+
+Never remove authorization, validation at trust boundaries, security controls, accessibility basics, data-loss protection, durable-data compatibility, public contracts, or resource-quiescence cleanup without explicit approval. If a cut would remove a user capability, public API, persisted format, wire contract, or compatibility path, keep it and report the tradeoff.
+
+### Apply proven cuts
+
+- Work within one ownership boundary at a time; keep batches reviewable.
+- Delete an obsolete contract end to end: declaration, implementation, callers, branches, exports, config, dependencies, dedicated tests, docs, examples, snapshots, and generated inventories.
+- For proven duplication, extract the smallest stable shared function, type, or module — preferring an existing canonical helper over a new framework — migrate every in-scope caller, and remove the superseded copies. Keep duplication when the copies belong to different domain boundaries, intentionally differ in semantics, are likely to evolve independently, or cannot be unified without weakening types, errors, ordering, performance, security, or readability; state the concrete reason. Preserve tests for each surviving observable boundary and add focused shared-contract coverage when the extraction creates a new reusable unit.
+- Synchronize every README, doc, example, API comment, and explanatory comment directly affected by the cleanup. Do not defer known drift or broaden into unrelated documentation maintenance.
+- Re-search removed names and stale documentation. Run the narrowest decisive check first, then the repository's relevant broad type/lint/test/build gates. Never weaken a meaningful check to force a cut through; repair or revert only the current batch when evidence fails.
+- Prefer net reduction: deletion first, then platform features, then dependencies already present. No replacement glue that erases the reduction.
+
+### Release boundary
+
+Never commit, push, publish, tag, release, or bump a package version. The user owns every release action, even when repository instructions automate release after green checks.
+
+### Report the cleanup
+
+Re-run Parts 1 and 2 over the cleanup diff, then return only the outcome: exact files/contracts removed or consolidated, measurable net reduction, behavior tradeoffs, and checks actually run. Do not repeat the evidence-gathering chronology; report only unresolved blockers and still-failing checks. Never equate green tests with proof, or deletion volume with value.
 
 ## Honesty rules
 
