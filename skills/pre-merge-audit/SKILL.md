@@ -28,11 +28,11 @@ Only on explicit user intent; never escalate into edits on your own. Survey the 
 
 ## Survey
 
-Read-only investigations — simplification audits, "what can be removed here" — never edit, no matter how obvious the cut. Partition the scope by responsibility, cover each part or exclude it with a reason, and grade every lead by the proof ladder in `references/cleanup.md` — search hits and analyzer output are leads, not authority. Report candidates ranked with confidence held apart from benefit, each naming the behavior it would surrender, the smallest check that would expose a wrong cut, and the exact missing fact for anything left unresolved. Then stop.
+Read-only investigations — simplification audits, "what can be removed here" — never edit, no matter how obvious the cut. Split the scope along ownership or responsibility lines; for any part you did not cover, say why. Grade every lead by the proof ladder in `references/cleanup.md` — search hits and analyzer output are leads, not authority. Rank the report so that how sure you are stays a separate question from how much a cut is worth, and have each candidate name the behavior it gives up, the one check that catches a mistaken cut, and the exact missing fact for anything left unresolved. Then stop.
 
 ## Honesty rules
 
 - A candidate is not a deletion; never cut without proof.
 - Never force a deletion to look productive, or equate deletion volume with value.
 - Never equate green tests with proof.
-- Classify every reference (production, support-only, unresolved) — hit counts are not semantics.
+- Classify every reference (production, support-only, unresolved) — a search hit says nothing about whether code runs.
