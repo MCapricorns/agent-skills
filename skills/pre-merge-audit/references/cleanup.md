@@ -25,6 +25,7 @@ Never remove authorization, validation at trust boundaries, security controls, a
 
 ## Apply proven cuts
 
+- Inspect `git status` first; preserve unrelated worktree changes.
 - Work within one ownership boundary at a time; keep batches reviewable.
 - Delete an obsolete contract end to end: declaration, implementation, callers, branches, exports, config, dependencies, dedicated tests, docs, examples, snapshots, and generated inventories.
 - For proven duplication, extract the smallest stable shared function, type, or module — preferring an existing canonical helper over a new framework — migrate every in-scope caller, and remove the superseded copies. Keep duplication when the copies belong to different domain boundaries, intentionally differ in semantics, are likely to evolve independently, or cannot be unified without weakening types, errors, ordering, performance, security, or readability; state the concrete reason. Preserve tests for each surviving observable boundary and add focused shared-contract coverage when the extraction creates a new reusable unit.
