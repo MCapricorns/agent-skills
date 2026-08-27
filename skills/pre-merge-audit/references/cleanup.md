@@ -1,6 +1,6 @@
 # Part 3 — Pre-commit Cleanup
 
-Read this before making any cleanup edit — only when the user explicitly authorized cleanup. If this run is audit-only, do not apply anything from this file.
+Read this before any deep-cleanup edit — only when the user explicitly authorized cleanup beyond the current diff. The automatic pre-commit pass uses only its inline diff-scoped rules in SKILL.md. If this run is audit-only, do not apply anything from this file.
 
 A cleanup request — "clean this up before we commit", "remove the dead code", "dedupe and simplify, then submit" — authorizes applying every safe, proven, in-scope cut end to end, without per-item approval. Do not stop at a candidate list when a safe cut is available. Finding no safe cut and making zero edits is a valid outcome; never force a deletion to look productive.
 
