@@ -1,6 +1,6 @@
-# Part 3 — Pre-commit Cleanup
+# Deep Cleanup
 
-Read this before any deep-cleanup edit — only when the user explicitly authorized cleanup beyond the current diff. The automatic pre-commit pass uses only its inline diff-scoped rules in SKILL.md. If this run is audit-only, do not apply anything from this file.
+Read this before any cleanup edit that reaches beyond the current diff's inline rules — only when the user explicitly authorized deep cleanup. The automatic pre-commit pass uses only its inline diff-scoped rules in SKILL.md.
 
 A cleanup request — "clean this up before we commit", "remove the dead code", "dedupe and simplify, then submit" — authorizes applying every safe, proven, in-scope cut end to end, without per-item approval. Do not stop at a candidate list when a safe cut is available. Finding no safe cut and making zero edits is a valid outcome; never force a deletion to look productive.
 
@@ -34,4 +34,4 @@ Never remove authorization, validation at trust boundaries, security controls, a
 
 ## Report the cleanup
 
-Re-run Parts 1 and 2 over the cleanup diff, then return only the outcome: exact files/contracts removed or consolidated, measurable net reduction, behavior tradeoffs, and checks actually run. Do not repeat the evidence-gathering chronology; report only unresolved blockers and still-failing checks. Never equate green tests with proof, or deletion volume with value.
+Re-verify the cleanup diff with the narrowest decisive checks, then the repository's relevant broad type/lint/test/build gates, and return only the outcome: exact files/contracts removed or consolidated, measurable net reduction, behavior tradeoffs, and checks actually run. Do not repeat the evidence-gathering chronology; report only unresolved blockers and still-failing checks. Never equate green tests with proof, or deletion volume with value.
