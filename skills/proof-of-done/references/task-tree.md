@@ -4,13 +4,13 @@ Read this before splitting substantial work across parts, files, or subagents, a
 
 ## Find the real seams
 
-The top of the tree is the request itself. Split at genuine seams — component, ownership, or verification boundaries — never to satisfy a target count or depth. Each part is one coherent deliverable: merge parts too small to stand alone, and split any part hiding two independently required outcomes. Pick the fewest parts that surface every stand-alone deliverable and every seam where separately built pieces must meet.
+The top of the tree is the request itself. Cut along real divisions — separate components, separate owners, or separate ways of verifying — never to satisfy a target count or depth. Each part must be a self-contained outcome: merge parts too small to stand alone, and split any part hiding two independently required outcomes. Pick the fewest parts that surface every stand-alone deliverable and every seam where separately built pieces must meet.
 
 ## Give every part a contract
 
-Before any part starts, fix and write down: the exact files or paths it owns, the interfaces and formats it shares with neighbors, which parts must finish first, the toolchain and working directory it needs, and failure and compatibility conventions. Two concurrent parts must never own overlapping paths; when two parts must touch the same work, serialize them or promote the shared work to its own integration part.
+Before any part starts, write down its side of the deal: which files it may touch, what it hands to and takes from its neighbors, which other parts must land first, what tools and directory it runs with, how it should behave when things fail, and which external shapes must stay compatible. Two concurrent parts must never own overlapping paths; when two parts must touch the same work, serialize them or promote the shared work to its own integration part.
 
-Every part gets its own section in `ACCEPTANCE.md` (`## leaf-2 <name>`), and every branch that joins children gets integration items: rerun the children's checks, then exercise how the children connect — interfaces line up, the combined flow behaves, and nothing regressed. Local correctness does not imply composition.
+Every part gets its own section in `ACCEPTANCE.md` (`## <part-name>`), and every branch that joins children gets integration items: rerun the children's checks, then exercise how the children connect — interfaces line up, the combined flow behaves, and nothing regressed. Local correctness does not imply composition.
 
 ## Delegating to subagents
 
@@ -22,4 +22,4 @@ Verify bottom-up, report only from the top. A part is done when its items hold c
 
 ## When not to split
 
-Keep the work in one pass when a single focused context can build and verify the whole, with no independent outcome left implicit. Splitting carries its own coordination and reassembly cost; pay it only for attention isolation or genuinely independent parts.
+Keep the work in one pass whenever one working session can build and check the whole, with no independent outcome left implicit. Splitting carries its own coordination and reassembly cost; pay it only to protect focus, or for genuinely independent parts.
