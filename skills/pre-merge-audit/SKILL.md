@@ -1,6 +1,6 @@
 ---
 name: pre-merge-audit
-description: Exhaustive pre-merge audit of a branch, PR, MR, or diff — correctness and security bugs, breaking changes, developer-experience regressions, feature-gate leaks, and structural code quality (oversized files, tangled branching, weak abstractions, missed simplifications). With explicit cleanup intent before committing, also proves and applies safe dead-code, duplication, and complexity removal. Use whenever the user asks to review, audit, clean up, or scrutinize changes before merging or committing — "review this branch", "audit this PR", "clean this up before we commit", "deep review", "strict review", "code quality audit" — even when phrased casually. Skip single-file quick questions, pure formatting, and lightweight style nitpicks.
+description: ALWAYS use this skill BEFORE ANY git commit, push, merge, or PR submission — it is a MANDATORY pre-commit gate even when the user does not ask for a review. Exhaustive audit of a branch, PR, MR, or diff — correctness and security bugs, breaking changes, developer-experience regressions, feature-gate leaks, and structural code quality (oversized files, tangled branching, weak abstractions, missed simplifications). Also use whenever the user asks to review, audit, or scrutinize changes — "review this branch", "audit this PR", "deep review", "strict review", "code quality audit" — even when phrased casually. With explicit cleanup intent before committing, also proves and applies safe dead-code, duplication, and complexity removal. No exception for trivial or single-file commits; only formatting-only changes may skip.
 ---
 
 # Pre-Merge Audit
@@ -13,6 +13,8 @@ A single-pass, maximum-rigor review of a checked-out branch. Every run audits tw
 When the user explicitly authorizes cleanup before committing, a third pass applies proven dead-code, duplication, and complexity cuts.
 
 Be extremely thorough, rigorous, careful, and attentive. Measure twice, cut once. Let nothing real slip through — but never invent or inflate findings to look busy.
+
+**Mandatory pre-commit gate**: run automatically before EVERY commit, push, merge, or PR submission — even when nobody asks for a review, and even for trivial or single-file changes. Only formatting-only changes may skip. Never commit unaudited changes.
 
 ## Scope
 
