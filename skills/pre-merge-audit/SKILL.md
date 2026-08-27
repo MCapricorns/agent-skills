@@ -1,6 +1,6 @@
 ---
 name: pre-merge-audit
-description: Exhaustive pre-merge audit of a branch, PR, MR, or diff — bugs, security vulnerabilities, breaking changes, developer-experience regressions, feature-gate leaks, and structural code quality (oversized files, tangled branching, weak abstractions, missed simplifications). With explicit cleanup intent before committing, also proves and applies safe dead-code, duplication, and complexity removal. Use whenever the user asks to review, audit, clean up, or scrutinize changes before merging or committing — "review this branch", "audit this PR", "clean this up before we commit", "deep/harsh/strict review", "code quality audit" — even when phrased casually.
+description: Exhaustive pre-merge audit of a branch, PR, MR, or diff — bugs, security vulnerabilities, breaking changes, developer-experience regressions, feature-gate leaks, and structural code quality. With explicit cleanup intent before committing, also proves and applies safe dead-code, duplication, and complexity removal. Use whenever the user asks to review, audit, clean up, or scrutinize changes before merging or committing — "review this branch", "audit this PR", "clean this up before we commit", "deep/harsh/strict review", "code quality audit" — even when phrased casually.
 when_to_use: Trigger on any pre-merge review request — "review this branch/PR/diff", "audit these changes", "看看这个分支能不能合", "严格审查", "deep review", "code quality audit" — and on pre-commit cleanup requests — "clean up before committing", "提交前清理", "remove the dead code", "dedupe then submit". Skip single-file quick questions, pure formatting, and lightweight style nitpicks.
 ---
 
@@ -11,227 +11,36 @@ A single-pass, maximum-rigor review of a checked-out branch. Every run audits tw
 1. **Correctness & security** — does the change break things or open holes?
 2. **Structure & maintainability** — even if it works, is it the right shape?
 
-When the user explicitly authorizes cleanup before committing, a third pass applies proven dead-code, duplication, and complexity cuts (Part 3).
+When the user explicitly authorizes cleanup before committing, a third pass applies proven dead-code, duplication, and complexity cuts.
 
 Be extremely thorough, rigorous, careful, and attentive. Measure twice, cut once. Let nothing real slip through — but never invent or inflate findings to look busy.
 
 ## Scope
 
-- Report only issues in code the diff ADDS or MODIFIES, plus side effects you traced into existing call sites.
-- Do not report pre-existing problems in untouched code unless the change compounds them.
-- Do not report an issue if the branch's evident, well-constrained intent is exactly that behavior (e.g. deliberately removing a feature flag or safeguard). Do report it if the author likely does not grasp the full implications, is under-weighting the negative impacts (extreme example: a PR bluntly titled "delete the database"), or the change looks malicious.
+- Report only issues in code the diff ADDS or MODIFIES, plus side effects traced into existing call sites. Pre-existing problems in untouched code only when the change compounds them.
+- Not an issue: behavior that is the branch's evident, well-constrained intent. Do report it if the author likely doesn't grasp the implications, under-weights the negatives, or the change looks malicious.
+- Never edit during audit; never commit, push, publish, tag, release, or bump a version in any mode — the user owns every release action.
 
-## Part 1 — Correctness & Security
+## Modes
 
-### Trace side effects end-to-end
+- **Audit (default)** — read-only. Produce prioritized findings and an approval verdict.
+- **Cleanup (only with explicit cleanup intent: "clean this up before we commit", "remove the dead code", "dedupe and simplify, then submit")** — authorization to apply every safe, proven, in-scope cut end to end without per-item approval. Do not stop at a candidate list when a safe cut is available. Zero edits is a valid outcome; never force a deletion to look productive.
 
-This is a complex codebase with many cross-package and cross-module dependencies. Simple local edits often break distant functionality. You MUST trace every change through its possible side effects before clearing it.
+## Load references on demand
 
-Hunt specifically for:
+The full standards live beside this file. Read each reference right before the pass that needs it; skip any reference whose pass doesn't apply.
 
-- **Bugs and logic errors** in the new or changed paths, including edge cases and error handling.
-- **Security vulnerabilities** introduced by the change.
-- **Developer-experience (DX) breakage.** It is easy to silently break how developers run or build the code locally. Examples (not exhaustive):
-  - changing how secrets are read, or where they are read from
-  - renaming or adding environment variables
-  - remapping ports or networking
-  - adding scripts that must be run for existing functionality to keep working
-
-  Adding a dependency through the normal package manager does NOT count; forcing a manual install outside the normal workflow (a website, an app store) does.
-- **Feature-gate leaks.** Features are often carefully gated behind feature flags or internal-only checks, and the leaks are usually subtle. Be very careful that nothing meant to stay gated leaks out.
-
-## Part 2 — Structure & Maintainability
-
-Above all, be **ambitious** about code structure. Do not merely identify local cleanup opportunities — actively hunt for high-leverage restructurings: changes that preserve behavior while making the implementation dramatically simpler, smaller, more direct, and more elegant.
-
-Baseline for this half:
-
-> Perform a deep quality audit of the current branch's changes.
-> Rethink how to structure and implement the changes to meaningfully improve quality without impacting behavior.
-> Improve abstractions, modularity, and legibility; reduce tangled control flow.
-> Be ambitious: if there is a clear path that involves restructuring part of the codebase, take it.
-> Measure twice, cut once.
-
-### Non-negotiable standards
-
-0. **Be ambitious about structural simplification.**
-   - Do not stop at "this could be a bit cleaner."
-   - Look for ways to reframe the change so whole branches, helpers, modes, conditionals, or layers disappear entirely.
-   - Prefer the solution that makes the code look obvious in retrospect.
-   - Assume a high-leverage move is usually available: a re-organization that uses the existing architecture more effectively.
-   - If you see a path to delete complexity rather than rearrange it, push hard for that path.
-
-1. **Do not let a PR push a file from under 1000 lines to over 1000 lines without a very strong reason.**
-   - Treat crossing that threshold as a strong quality smell by default.
-   - Prefer extracting helpers, subcomponents, modules, or local abstractions instead of letting a file sprawl.
-   - If the diff crosses the threshold, explicitly ask whether the code should be decomposed first.
-   - Waive only with a compelling structural reason AND a clearly organized result.
-
-2. **Do not allow tangled growth in existing code.**
-   - Be highly suspicious of new ad-hoc conditionals, scattered special cases, or one-off branches inserted into unrelated flows.
-   - "Weird if statements in random places" is a design problem, not a stylistic nit.
-   - Prefer pushing the logic into a dedicated abstraction, helper, state machine, policy object, or separate module.
-   - Call out changes that make surrounding code harder to reason about, even when they technically work.
-
-3. **Bias toward cleaning the design, not just accepting working code.**
-   - If behavior can stay the same while structure becomes meaningfully cleaner, push for the cleaner version.
-   - Do not rubber-stamp "it works" implementations that leave the codebase messier.
-   - Strongly prefer simplifications that remove moving pieces over refactors that spread the same complexity around.
-
-4. **Prefer direct, boring, maintainable code over hacky or magical code.**
-   - Treat brittle, ad-hoc, or "magic" behavior as a quality problem.
-   - Be skeptical of generic mechanisms that hide simple data-shape assumptions.
-   - Flag thin abstractions, identity wrappers, and pass-through helpers that add indirection without buying clarity.
-
-5. **Push hard on type and boundary cleanliness when it affects maintainability.**
-   - Question unnecessary optionality, unchecked dynamic types (`any`, `unknown`, `void*`), and cast-heavy code when a clearer boundary could exist.
-   - Prefer explicit typed models or shared contracts over loosely-shaped ad-hoc objects.
-   - If the branch relies on silent fallback to paper over an unclear invariant, ask whether the boundary should be explicit instead.
-
-6. **Keep logic in the canonical layer and reuse existing helpers.**
-   - Call out feature logic leaking into shared paths, or implementation details leaking through APIs.
-   - Prefer existing canonical utilities over bespoke one-offs.
-   - Push code toward the right package, service, or module instead of normalizing architectural drift.
-
-7. **Treat needless sequential orchestration and non-atomic updates as design smells when the cleaner structure is obvious.**
-   - If independent work is serialized for no good reason, ask whether it should run in parallel.
-   - If related updates can leave state half-applied, push for a more atomic structure.
-   - Do not over-index on micro-optimizations; flag avoidable orchestration complexity that makes the implementation more brittle.
-
-### Primary review questions
-
-For every meaningful change, ask:
-
-- Is there a high-leverage restructuring that would make this dramatically simpler?
-- Can the change be reframed so fewer concepts, branches, or helper layers are needed?
-- Does it improve or worsen the local architecture?
-- Did the diff add branching complexity where a better abstraction should exist?
-- Did a previously cohesive module become more coupled, more stateful, or harder to scan?
-- Is this logic living in the right file and layer?
-- Did the change enlarge a file or component past a healthy size boundary?
-- Are there repeated conditionals that signal a missing model or missing helper?
-- Is the implementation direct and legible, or does it rely on special cases and incidental control flow?
-- Is this abstraction earning its keep, or is it just a wrapper?
-- Did the diff introduce casts, optionality, or ad-hoc object shapes that obscure the real invariant?
-- Is this logic in the canonical layer, or did details leak across a boundary?
-- Is the orchestration more sequential or less atomic than it needs to be?
-
-### What to flag aggressively
-
-Escalate findings when you see:
-
-- A complicated implementation where a cleaner reframing could delete whole categories of complexity.
-- Refactors that move code around without reducing the number of concepts a reader must hold in their head.
-- A file crossing 1000 lines due to this change, especially if the new code could be split out.
-- New conditionals bolted onto unrelated code paths.
-- One-off booleans, nullable modes, or flags that complicate existing control flow.
-- Feature-specific logic leaking into general-purpose modules.
-- Generic "magic" handling that hides simple structure.
-- Thin wrappers or identity abstractions that add indirection without simplifying anything.
-- Unnecessary casts, unchecked dynamic types, or optional parameters that muddy the real contract.
-- Copy-pasted logic instead of extracted helpers.
-- Narrow edge-case handling inserted into the middle of an already busy function.
-- Refactors that technically pass tests but make the code less modular or less readable.
-- "Temporary" branching that is likely to become permanent debt.
-- Bespoke helpers where the codebase already has a canonical utility for the job.
-- Logic added in the wrong layer or package when it should live somewhere more central.
-- Sequential async flow where obviously independent work would be simpler and clearer in parallel.
-- Partial-update logic that leaves state less atomic than necessary.
-
-### Preferred remedies
-
-When you identify a structural problem, prefer suggestions like:
-
-- Delete a whole layer of indirection rather than polishing it.
-- Reframe the state model so conditionals disappear instead of being centralized.
-- Change the ownership boundary so the feature becomes a natural extension of an existing abstraction.
-- Turn special-case logic into a simpler default flow with fewer exceptions.
-- Extract a helper or pure function.
-- Split a large file into smaller focused modules.
-- Move feature-specific logic behind a dedicated abstraction.
-- Replace condition chains with a typed model or explicit dispatcher.
-- Separate orchestration from business logic.
-- Collapse duplicate branches into a single clearer flow.
-- Delete wrappers that do not meaningfully clarify the API.
-- Reuse the existing canonical helper instead of introducing a near-duplicate.
-- Make type boundaries more explicit so the control flow gets simpler.
-- Move logic to the package, module, or layer that already owns the concept.
-- Parallelize independent work when that also simplifies orchestration.
-- Restructure related updates into a more atomic flow when partial state is harder to reason about.
-
-Do not settle for "maybe rename this" feedback when the real issue is structural.
-Do not settle for a merely cleaner version of the same messy idea when a much simpler idea is plausibly reachable.
-
-## Part 3 — Pre-commit cleanup (only with explicit cleanup intent)
-
-By default this skill audits and reports; it never edits. A request that explicitly authorizes cleanup — "clean this up before we commit", "remove the dead code", "dedupe and simplify, then submit" — authorizes applying every safe, proven, in-scope cut end to end, without per-item approval. Do not stop at a candidate list when a safe cut is available. Finding no safe cut and making zero edits is a valid outcome; never force a deletion to look productive.
-
-### A candidate is not a deletion
-
-Static tools, search counts, apparent duplication, and earlier reconnaissance only produce leads. Re-read load-bearing files and repeat the decisive searches yourself; never inherit deletion proof from a prior report. Remove code only after proving all of:
-
-- **Consumers** — real production consumers, distinguished from support-only references and ambiguous dynamic/plugin/reflection/codegen entrypoints. Search symbols, paths, strings, alternate call forms, docs, tests, and package metadata.
-- **Reachability** — traced through entrypoints, configuration, registries, dynamic imports, dependency injection, events, queues, persistence, processes, and protocols. Start from central production surfaces, not isolated unused-looking symbols.
-- **Ownership & history** — who creates, mutates, cancels, disposes, and observes each piece of state; the commit and decision history still explains why the code exists.
-- **Boundaries** — generated, vendored, fixture, migration, and published surfaces are out of bounds.
-
-Keep a candidate when a real consumer exists, dynamic reachability is unresolved, the original rationale still holds, the complexity merely moves elsewhere, or the cut is actually a product/API decision. State what behavior the cut gives up, even when the answer is "nothing observable".
-
-### Hunt list
-
-Dead exports, symbols, and config; unconsumed APIs; duplicate or near-repeated implementations (compare observable contracts, invariants, ordering, failure handling, and side effects — not text similarity); duplicate facts or lifecycle state; speculative abstractions; forwarding-only layers; abandoned compatibility residue; and hand-rolled infrastructure the platform or an installed dependency already provides.
-
-### Protected surfaces
-
-Never remove authorization, validation at trust boundaries, security controls, accessibility basics, data-loss protection, durable-data compatibility, public contracts, or resource-quiescence cleanup without explicit approval. If a cut would remove a user capability, public API, persisted format, wire contract, or compatibility path, keep it and report the tradeoff.
-
-### Apply proven cuts
-
-- Work within one ownership boundary at a time; keep batches reviewable.
-- Delete an obsolete contract end to end: declaration, implementation, callers, branches, exports, config, dependencies, dedicated tests, docs, examples, snapshots, and generated inventories.
-- For proven duplication, extract the smallest stable shared function, type, or module — preferring an existing canonical helper over a new framework — migrate every in-scope caller, and remove the superseded copies. Keep duplication when the copies belong to different domain boundaries, intentionally differ in semantics, are likely to evolve independently, or cannot be unified without weakening types, errors, ordering, performance, security, or readability; state the concrete reason. Preserve tests for each surviving observable boundary and add focused shared-contract coverage when the extraction creates a new reusable unit.
-- Synchronize every README, doc, example, API comment, and explanatory comment directly affected by the cleanup. Do not defer known drift or broaden into unrelated documentation maintenance.
-- Re-search removed names and stale documentation. Run the narrowest decisive check first, then the repository's relevant broad type/lint/test/build gates. Never weaken a meaningful check to force a cut through; repair or revert only the current batch when evidence fails.
-- Prefer net reduction: deletion first, then platform features, then dependencies already present. No replacement glue that erases the reduction.
-
-### Release boundary
-
-Never commit, push, publish, tag, release, or bump a package version. The user owns every release action, even when repository instructions automate release after green checks.
-
-### Report the cleanup
-
-Re-run Parts 1 and 2 over the cleanup diff, then return only the outcome: exact files/contracts removed or consolidated, measurable net reduction, behavior tradeoffs, and checks actually run. Do not repeat the evidence-gathering chronology; report only unresolved blockers and still-failing checks. Never equate green tests with proof, or deletion volume with value.
-
-## Honesty rules
-
-- NEVER present an issue with unfinished research. If you can check the other side yourself ("the client has issue X, but the backend probably handles it"), check before reporting.
-- NEVER misreport priority. Inflating findings to look thorough makes developers stop trusting the review. Trace issues end-to-end until you have complete confidence, then report the true severity.
-- Prefer a small number of high-conviction findings over a long list of cosmetic notes when structural issues exist.
-
-## Tone
-
-Be direct, serious, and demanding about quality. Do not be rude, but do not soften major issues into mild suggestions. If the code makes the codebase messier, say so plainly. If the implementation missed an opportunity for a dramatic simplification, say that plainly too.
-
-Useful phrasings:
-
-- "This pushes the file past 1000 lines. Can we decompose it first?"
-- "This adds another special-case branch to an already busy flow. Can we move it behind its own abstraction?"
-- "This works, but it makes the surrounding code harder to follow. Keep the behavior, restructure the implementation."
-- "This looks like feature logic leaking into a shared path. Can we isolate it?"
-- "This abstraction seems unnecessary. Can we keep the direct flow?"
-- "Why does this need a cast or optional here? Can we make the boundary explicit instead?"
-- "This looks like a bespoke helper for something we already have. Can we reuse the canonical one?"
-- "I think there's a move here that makes this much simpler. Can we reframe it so these branches disappear?"
-- "This refactor moves complexity around but doesn't delete it. Is there a way to make the model itself simpler?"
+- `references/correctness-security.md` — before Part 1: side-effect tracing discipline, bug hunting, security vulnerabilities, DX breakage, feature-gate leaks.
+- `references/structure-maintainability.md` — before Part 2: structural ambition, non-negotiable standards (1000-line threshold, tangled growth, abstraction and boundary cleanliness), review questions, aggressive flags, preferred remedies, tone, and the approval bar.
+- `references/cleanup.md` — before any cleanup edit only: deletion-proof requirements (consumers, reachability, ownership, boundaries), hunt list, protected surfaces, applying cuts, and the cleanup report format.
 
 ## Process
 
-1. Run Parts 1 and 2 completely, with fresh eyes, BEFORE looking at any PR/MR discussion. This keeps your review unbiased.
-2. If you have medium-to-high findings and a PR/MR exists, check its discussion via the gh/glab CLI. If automated review bots or other reviewers found issues you missed, evaluate them, include the valid ones, and credit them in your report. If they found the same issues you did, incorporate anything their findings add to yours.
+1. Run Parts 1 and 2 completely, with fresh eyes, BEFORE looking at any PR/MR discussion — this keeps the review unbiased.
+2. With medium-to-high findings and a PR/MR, check its discussion via gh/glab CLI. If bots or reviewers found issues you missed, evaluate, include the valid ones, and credit them.
+3. Cleanup mode: audit first, then apply proven cuts per `references/cleanup.md`, then re-run Parts 1 and 2 over the cleanup diff.
 
-## Output expectations
-
-Prioritize findings in this order:
+## Output priorities
 
 1. Security and correctness bugs
 2. Breaking changes to existing functionality
@@ -241,28 +50,14 @@ Prioritize findings in this order:
 6. Boundary, abstraction, and type-contract problems
 7. File-size, modularity, and legibility concerns
 
-Do not flood the review with low-value nits while larger structural issues exist.
+Cleanup runs additionally report: exact files/contracts removed or consolidated, measurable net reduction, behavior tradeoffs, and checks actually run. No evidence-gathering chronology; only unresolved blockers and still-failing checks.
 
-## Approval bar
+## Honesty rules (every mode)
 
-Do not approve merely because behavior seems correct. Approve only when ALL of the following hold:
+- NEVER present an issue with unfinished research — check the other side yourself before reporting.
+- NEVER misreport priority; a few high-conviction findings beat a long list of cosmetic notes.
+- NEVER equate green tests with proof, or deletion volume with value.
 
-- no clear structural regression
-- no visible opportunity missed to make the implementation dramatically simpler
-- no unjustified file-size explosion
-- no tangled growth from special-case branching
-- no hacky or magical abstraction obscuring the design
-- no unnecessary wrapper, cast, or optionality churn obscuring the real design
-- no architecture-boundary leak or canonical-helper duplication
-- no obvious decomposition missed that would materially improve maintainability
+## Approval bar (audit mode)
 
-Treat these as presumptive blockers unless the author can clearly justify them:
-
-- the change preserves a lot of incidental complexity when a plausible restructure would delete it
-- the change pushes a file from below 1000 lines to above it
-- the change adds ad-hoc branching that tangles an existing flow
-- the change solves a local problem by scattering feature checks across shared code
-- the change adds an unnecessary abstraction, wrapper, or cast-heavy contract that makes the design more indirect
-- the change duplicates an existing helper or puts logic in the wrong layer when a clear canonical home exists
-
-If any bar is unmet, leave explicit, actionable feedback and push for a cleaner decomposition.
+Approve only when ALL hold: no structural regression; no visible missed dramatic simplification; no unjustified file-size explosion; no tangled special-case growth; no hacky or magical abstraction; no wrapper/cast/optionality churn; no architecture-boundary leak or canonical-helper duplication; no obvious decomposition missed. The presumptive blockers and full bar live in `references/structure-maintainability.md`.
