@@ -1,29 +1,19 @@
 ---
 name: ms-cpp
-description: ALWAYS use this skill BEFORE writing or modifying ANY C++ code (.h/.cpp files), even for small snippets. Enforces the house C++ style (PascalCase types, snake_case functions, trailing return types, noexcept contracts), modern C++ syntax requirements (latest standard, concepts, <format>, std::span, designated initializers), contract-comment documentation, MSBuild/vcxproj discipline, and the design playbook (layered public header, preallocated hot paths, EH-free core). This skill is MANDATORY for all C++ development.
+description: House C++ style, design, and MSBuild discipline. Use when creating, modifying, reviewing, or refactoring any C++ code — .cpp, .h, .hpp, .cc, or .cxx files, headers, templates, CMake or vcxproj/sln/MSBuild projects, MSVC builds — including one-line fixes and small helpers, and when answering C++ design or API questions. Also triggers on C++, MSVC, Visual Studio, STL, compiler or linker errors that end in C++ edits, and new C++ project setup. Owns naming, modern-syntax requirements, contract comments, and build/project layout. Win32, COM, and interop correctness belongs to ms-win32.
 ---
 
 # C++ Development
 
-This skill enforces the house C++ coding standards when creating or modifying C++ code.
-
-## Instructions
-
-**CRITICAL**: This skill MUST be invoked for ANY C++ code operation, including:
-
-- Creating new .h/.cpp files (even small helpers)
-- Modifying existing C++ files (any change, no matter how small)
-- Reviewing or refactoring C++ code
+House style for every C++ change, however small.
 
 **Process**:
 
-1. Read [references/style-and-design.md](./references/style-and-design.md)
-2. Before writing/modifying ANY C++ code, ensure edits are conformant
+1. Read [references/style-and-design.md](./references/style-and-design.md) once per session before the first C++ edit
+2. Make every new or modified line conformant
 3. Document every public symbol with a contract comment (what it does, ownership, failure behavior)
-4. Comments must ALWAYS be written in American English, unless the user explicitly requests a different language
-5. If the file is fully compliant, add a header comment: `// C++ guideline compliant {date}` where {date} is the guideline date/version
-
-**No exceptions**: Even for trivial code, guidelines must be followed.
+4. Write comments in American English unless the user explicitly requests another language
+5. When the file is fully compliant, add a header comment: `// C++ guideline compliant {date}` where {date} is the guideline date/version
 
 ## Non-negotiables (see references for detail)
 

@@ -1,29 +1,19 @@
 ---
 name: ms-rust
-description: ALWAYS use this skill BEFORE writing or modifying ANY Rust code (.rs files), even for small snippets. Enforces the house Rust style (no weasel words, documented magic values, #[expect] lint overrides), panic/error discipline, M-CANONICAL-DOCS documentation with compliance comments, unsafe/FFI restraint, and API design rules. This skill is MANDATORY for all Rust development.
+description: House Rust style and design discipline. Use when creating, modifying, reviewing, or refactoring any Rust code — .rs files, Cargo.toml or workspace changes, cargo build, test, clippy, or fmt work, proc macros — including one-line fixes and small helpers, and when answering Rust API-design questions. Also triggers on Rust, cargo, crate, clippy, rustc errors, unsafe, lifetimes, traits, borrow-checker fights, and new crate setup. Owns naming, panic and error discipline, documentation, lints, and API design. Win32 FFI correctness belongs to ms-win32.
 ---
 
 # Rust Development
 
-This skill enforces the house Rust coding standards when creating or modifying Rust code.
-
-## Instructions
-
-**CRITICAL**: This skill MUST be invoked for ANY Rust code operation, including:
-
-- Creating new .rs files (even small helpers)
-- Modifying existing .rs files (any change, no matter how small)
-- Reviewing or refactoring Rust code
+House style for every Rust change, however small.
 
 **Process**:
 
-1. Read [references/style-and-design.md](./references/style-and-design.md)
-2. Before writing/modifying ANY Rust code, ensure edits are conformant
+1. Read [references/style-and-design.md](./references/style-and-design.md) once per session before the first Rust edit
+2. Make every new or modified line conformant
 3. Document every public item with M-CANONICAL-DOCS sections (`Examples`/`Errors`/`Panics`/`Safety`/`Abort` when applicable)
-4. Comments must ALWAYS be written in American English, unless the user explicitly requests a different language
-5. If the file is fully compliant, add a comment: `// Rust guideline compliant {date}` where {date} is the guideline date/version
-
-**No exceptions**: Even for trivial code, guidelines must be followed.
+4. Write comments in American English unless the user explicitly requests another language
+5. When the file is fully compliant, add a comment: `// Rust guideline compliant {date}` where {date} is the guideline date/version
 
 ## Non-negotiables (see references for detail)
 

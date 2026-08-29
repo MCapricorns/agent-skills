@@ -1,6 +1,6 @@
 ---
 name: ms-win32
-description: ALWAYS use this skill BEFORE writing or modifying ANY Windows/Win32, COM, or native interop code — any language calling Windows APIs (C/C++, Rust FFI, C#/P-Invoke, PowerShell). Enforces Unicode W-suffix APIs only, UTF-16/UTF-8 text discipline, documented failure-value checks (HRESULT, LSTATUS, GetLastError), and RAII ownership for handles, buffers, and COM allocations. MANDATORY even for trivial snippets.
+description: Correct-usage rules for Windows APIs called from any language. Use when writing, modifying, or reviewing code that calls Win32, COM, or NT APIs — C/C++ including windows.h, Rust using the windows or windows-sys crates or raw extern system FFI, C# P/Invoke or DllImport, PowerShell or scripts touching the registry, services, or shell — even for a one-line snippet. Also triggers on HANDLE, HWND, HRESULT, GetLastError, CreateFileW, RegOpenKeyExW, CoInitializeEx, WinMain, message loops, wide strings and UTF-16, any W- or A-suffixed API, and DLL boundary design. Owns cross-language FFI, text-encoding, failure-value, and handle-ownership rules. C++ and Rust naming or style belong to ms-cpp and ms-rust; LF/CRLF churn belongs to git-line-endings.
 ---
 
 # Win32 Discipline

@@ -1,11 +1,11 @@
 ---
 name: git-line-endings
-description: ALWAYS use this skill when a git LF/CRLF warning appears ("LF will be replaced by CRLF", "CRLF will be replaced by LF"), when setting up a new repository's line-ending contract, or when touching .gitattributes or core.autocrlf. Enforces declaring the contract in .gitattributes and renormalizing once, instead of per-user autocrlf luck.
+description: Repository line-ending contract — .gitattributes, CRLF vs LF, core.autocrlf. Use when git warns 'LF will be replaced by CRLF' or 'CRLF will be replaced by LF', when a diff or PR shows every line of a file changed or ^M carriage returns, when files appear modified right after clone or checkout with no edits, when .bat, .cmd, .sln, or .vcxproj files misbehave from LF endings, when adding or editing .gitattributes or core.autocrlf, or when creating a repository that Windows and non-Windows machines will share.
 ---
 
 # Git Line Endings
 
-Invoke whenever git prints an LF/CRLF warning, or before creating a repository that will be cloned on both Windows and non-Windows machines.
+Invoke whenever git prints an LF/CRLF warning, a diff churns whole files or shows `^M`, files sit modified right after a fresh clone, or before creating a repository that will be cloned on both Windows and non-Windows machines. Diagnose the current state with `git ls-files --eol` — it prints index vs worktree endings per file.
 
 `warning: in the working copy of '<file>', LF will be replaced by CRLF the next time Git touches it` means the repo relies on per-user `core.autocrlf` instead of declaring its contract. Never "fix" this by re-saving files or suppressing warnings. Do:
 

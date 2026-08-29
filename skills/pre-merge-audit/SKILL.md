@@ -1,9 +1,9 @@
 ---
 name: pre-merge-audit
-description: ALWAYS use this skill BEFORE ANY git commit, push, merge, or PR submission — a MANDATORY pre-commit pass that cleans the staged diff (dead code, duplication, leftover debris), even when the user does not ask for it. Also use for explicit cleanup requests beyond the current diff — "clean this up before we commit", "remove the dead code", "dedupe and simplify, then submit" — and for read-only simplification surveys — "what can we delete here", "audit this module for dead code" — even when phrased casually. Surveys report ranked evidence only and never edit. No exception for trivial or single-file commits; only formatting-only changes may skip.
+description: Pre-commit hygiene pass and dead-code cleanup. Use before any git commit, push, merge, or PR submission — the staged diff gets cleaned even when nobody asks, including trivial or single-file commits — and when the user asks to clean up, simplify, dedupe, or strip dead code ('clean this up before we commit', 'remove what is unused', 'dedupe and simplify, then submit'), or wants a read-only audit ('what can we delete here', 'audit this module for dead code'). Also triggers on commit, push, merge, PR, ship it, land it, submit, dead code, leftover debug logging, unused imports. Not for diagnosing broken behavior (systematic-debugging), test-quality rules (writing-tests), or proving success claims (verification-before-completion). Formatting-only changes may skip.
 ---
 
-# Pre-Commit Clean
+# Pre-Merge Audit
 
 Three tiers by authority:
 
@@ -17,7 +17,7 @@ Measure twice, cut once — and never force a deletion to look productive. Zero 
 
 Mandatory before EVERY commit, push, merge, or PR submission — even when nobody asks, and even for trivial or single-file changes. Only formatting-only changes may skip.
 
-1. Tidy the staged diff: remove dead code the diff introduces, obvious duplication within it, leftover debris (commented-out code, unused imports/variables, debug output), and structural bloat the diff adds (thin wrappers, needless indirection, one-off flags tangling existing flow).
+1. Tidy the staged diff: remove dead code the diff introduces, obvious duplication within it, leftover debris (commented-out code, unused imports/variables, debug output), and structural bloat the diff adds (thin wrappers, needless indirection, one-off flags tangling existing flow). House compliance markers (`// ... guideline compliant ...`) are contracts, not debris.
 2. Cut only what the diff itself added or modified, and only with proof: no production consumers, unreachable, no behavior contract touched. Anything reaching beyond the diff is deep cleanup, not this pass.
 3. Run the smallest targeted checks covering the change (typecheck, lint, touched tests).
 4. Report what was cleaned — files/contracts removed, net reduction, check failures; the user still owns the commit itself.
