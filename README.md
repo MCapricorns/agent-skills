@@ -21,6 +21,8 @@ Every skill here follows the same contract, tuned for reliable triggering:
 | Rust style, design, lints | ms-rust |
 | Line endings, .gitattributes | git-line-endings |
 
+CI enforces the contract mechanically — `python3 scripts/validate_skills.py` checks frontmatter shape and YAML safety, name/directory match, description length within loader limits, resolvable links and reference mentions, orphan reference files, and README coverage.
+
 ## Skills
 
 ### Discipline
