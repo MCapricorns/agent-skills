@@ -1,31 +1,47 @@
 # agent-skills
 
-Personal cross-agent skill collection. Every skill auto-triggers on intent (not just literal keywords), carries only standard `name` + `description` frontmatter, and loads its full standards progressively from `references/` only when needed. Works with ZCode, Claude Code, Cursor, and any agent that discovers `~/.agents/skills/`.
+Personal cross-agent skill collection. Works with ZCode, Claude Code, Cursor, and any agent that discovers `~/.agents/skills/`.
+
+## Design rules
+
+Every skill here follows the same contract, tuned for reliable triggering:
+
+- **The description is the trigger.** It states what the skill is in one clause, then the concrete situations that should fire it — file types, tool names, quoted error text, and the phrasings people actually use. It never summarizes the skill's rules: agents that see a summary follow the summary and skip the body.
+- **One owner per rule.** Each concern lives in exactly one skill; neighbors point to it by name instead of restating it, and descriptions carry negative triggers ("X belongs to skill-y") so skills never fight over the same task.
+- **Lean bodies, progressive depth.** SKILL.md carries the load-bearing rules; the full standards live in `references/` and load only when needed.
+
+| Concern | Owner |
+|---------|-------|
+| Diff hygiene at commit time, dead-code cleanup, simplification audits | pre-merge-audit |
+| Proof behind "done / fixed / passing" claims | verification-before-completion |
+| Root-cause process when anything is broken | systematic-debugging |
+| Test quality, mocks, regression tests | writing-tests |
+| Windows API correctness from any language | ms-win32 |
+| C++ style, design, MSBuild | ms-cpp |
+| Rust style, design, lints | ms-rust |
+| Line endings, .gitattributes | git-line-endings |
 
 ## Skills
 
-### pre-merge-audit
+### Discipline
 
-Mandatory pre-commit hygiene, two tiers:
+- **pre-merge-audit** — mandatory pre-commit pass that cleans the staged diff (dead code, duplication, leftover debris) before any commit, push, merge, or PR; explicit-intent deep cleanup with a proof ladder for every deletion; read-only simplification surveys that rank evidence and never edit.
+- **verification-before-completion** — no success claim without running the proving command fresh and reading its output; claims-to-proof table for tests, builds, bug fixes, requirements, and subagent reports.
 
-- **Pre-commit pass (automatic, every commit)** — before any commit, push, merge, or PR: clean the staged diff (dead code, duplication, leftover debris, structural bloat the diff adds), prove every cut, run the smallest targeted checks, report; never commit unaudited changes.
-- **Deep cleanup (explicit intent only)** — "clean this up before we commit", "remove the dead code": apply proven cuts anywhere in scope per `references/cleanup.md`, guided by the structural red lines in `references/structure.md` (1000-line files, tangled growth, thin wrappers, canonical helpers, preferred remedies).
+### Process
 
-### ms-win32
+- **systematic-debugging** — root cause before any fix: read the evidence, reproduce reliably, diff against last-good, instrument boundaries, trace bad values to their origin, test one hypothesis at a time, fix with a regression test; three failed fixes escalate to questioning the design.
+- **writing-tests** — tests that catch real breaks: name the break first, watch every new test fail then pass, hand-derived expectations, no change detectors, mocks earn no assertions, mutation check before finishing.
 
-Windows/Win32 API coding discipline — mandatory before writing or modifying any Windows API, COM, or native interop code in any language (C/C++, Rust FFI, C#/P-Invoke, PowerShell): Unicode `W` APIs only (never `A`), bytes vs UTF-16 code units, documented failure values (`HRESULT`, `LSTATUS`, `GetLastError`), RAII ownership for handles, buffers, and COM allocations. Also hosts the cross-language general rules (Rust `windows`-crate FFI, DLL boundary portability, handle RAII) that language skills defer to instead of restating.
+### House style
 
-### git-line-endings
+- **ms-win32** — Windows/Win32/COM correctness in any language: Unicode `W` APIs only, bytes vs UTF-16 code units, documented failure values (`HRESULT`, `LSTATUS`, `GetLastError`), RAII handle ownership, and the cross-language FFI rules (Rust `windows`-crate discipline, DLL boundary portability) that language skills defer to.
+- **ms-cpp** — house C++ discipline: latest-standard syntax (concepts, `<format>`, `std::span`, `std::expected`), PascalCase/snake_case naming, trailing return types, `noexcept`/`[[nodiscard]]` contracts, contract comments, fail-fast init with EH-free hot paths, and vswhere/MSBuild build discipline.
+- **ms-rust** — house Rust discipline: panic = programming bug vs `Result` = situational failure, `unsafe` restraint with mandatory `Safety` sections, no weasel-word names, `#[expect]` lint overrides, M-CANONICAL-DOCS documentation, and API design rules. Win32 FFI defers to ms-win32.
 
-Generic repo hygiene for LF/CRLF churn — triggered by git warnings like "LF will be replaced by CRLF". Owns the repository line-ending contract: `.gitattributes` with explicit CRLF for Windows-tooling files (`.bat`, `.sln`, `.vcxproj`), one-shot `git add --renormalize .`, and `core.autocrlf` as belt-and-suspenders. Not Windows-API specific; applies to any multi-platform repo.
+### Repo hygiene
 
-### ms-cpp
-
-House C++ coding discipline — mandatory before writing or modifying any C++ code. Modern syntax requirements (latest standard: concepts over SFINAE, `<format>`, `std::span`, `std::expected`, structured bindings, designated initializers), naming (PascalCase types, snake_case functions, `k_` constants), syntax contracts (trailing return types, `noexcept`/`[[nodiscard]]`/`constexpr`), contract-comment documentation, the design playbook (pure public header, fail-fast init, EH-free preallocated hot paths), and MSBuild/vcxproj discipline (vswhere discovery, `/W4`, `/sdl`, `stdcpplatest`, full build matrix).
-
-### ms-rust
-
-House Rust coding discipline — mandatory before writing or modifying any Rust code. Panic/error discipline (panic = programming bug, `Result` = situational failure), `unsafe` restraint with mandatory `Safety` sections, naming without weasel words, documented magic values, `#[expect]` lint overrides, M-CANONICAL-DOCS documentation with compliance comments, and API design rules. Loads from a single `references/style-and-design.md`; Win32 FFI specifics defer to the ms-win32 skill.
+- **git-line-endings** — the repository owns its line-ending contract: `.gitattributes` with explicit CRLF for Windows-tooling files, one-shot `git add --renormalize .`, `core.autocrlf` as belt-and-suspenders; triggered by LF/CRLF warnings, whole-file diffs, and `^M` churn.
 
 ## Install
 
