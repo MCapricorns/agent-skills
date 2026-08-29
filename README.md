@@ -13,7 +13,15 @@ Mandatory pre-commit hygiene, two tiers:
 
 ### ms-win32
 
-Windows/Win32 API coding discipline — mandatory before writing or modifying any Windows API, COM, or native interop code in any language (C/C++, Rust FFI, C#/P-Invoke, PowerShell): Unicode `W` APIs only (never `A`), bytes vs UTF-16 code units, documented failure values (`HRESULT`, `LSTATUS`, `GetLastError`), RAII ownership for handles, buffers, and COM allocations.
+Windows/Win32 API coding discipline — mandatory before writing or modifying any Windows API, COM, or native interop code in any language (C/C++, Rust FFI, C#/P-Invoke, PowerShell): Unicode `W` APIs only (never `A`), bytes vs UTF-16 code units, documented failure values (`HRESULT`, `LSTATUS`, `GetLastError`), RAII ownership for handles, buffers, and COM allocations. Also owns Windows repo hygiene: git LF/CRLF line-ending contracts (`.gitattributes` + renormalize) and MSBuild via vswhere.
+
+### ms-c++
+
+House C++ coding discipline — mandatory before writing or modifying any C++ code. Naming (PascalCase types, snake_case functions, `k_` constants), syntax contracts (trailing return types, `noexcept`/`[[nodiscard]]`/`constexpr`), contract-comment documentation, the design playbook (pure public header, fail-fast init, EH-free preallocated hot paths), and MSBuild/vcxproj discipline (`/W4`, `/sdl`, `stdcpplatest`).
+
+### ms-rust
+
+Microsoft Rust coding guidelines — mandatory before writing or modifying any Rust code, even Hello World. Loads progressive guideline sections from `resources/` (universal, AI-friendly, safety, FFI, performance, documentation, library UX), applies M-CANONICAL-DOCS documentation format, adds compliance comments, and validates edits against the guidelines.
 
 ## Install
 
