@@ -1,6 +1,6 @@
 # Structural Bloat — Red Lines and Targets
 
-Read this during any cleanup run to hunt complexity beyond literal dead code — both what the change adds and high-leverage restructurings. Above all, be ambitious: do not stop at "this could be a bit cleaner" — look for restructurings that preserve behavior while deleting whole categories of complexity, making the code look obvious in retrospect. Prefer deleting complexity over rearranging it; a refactor that moves the same mess to a new file is not a cut, and neither is a wrapper that hides rather than removes it.
+Read this during deep cleanup and read-only surveys to hunt complexity beyond literal dead code — both what the change adds and high-leverage restructurings. The automatic pre-commit pass never loads this file: it stays within the diff-scoped rules in SKILL.md. In a survey these targets are leads to report, never edits. Above all, be ambitious: do not stop at "this could be a bit cleaner" — look for restructurings that preserve behavior while deleting whole categories of complexity, making the code look obvious in retrospect. Prefer deleting complexity over rearranging it; a refactor that moves the same mess to a new file is not a cut, and neither is a wrapper that hides rather than removes it.
 
 ## Red lines
 
