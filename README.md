@@ -13,11 +13,15 @@ Mandatory pre-commit hygiene, two tiers:
 
 ### ms-win32
 
-Windows/Win32 API coding discipline — mandatory before writing or modifying any Windows API, COM, or native interop code in any language (C/C++, Rust FFI, C#/P-Invoke, PowerShell): Unicode `W` APIs only (never `A`), bytes vs UTF-16 code units, documented failure values (`HRESULT`, `LSTATUS`, `GetLastError`), RAII ownership for handles, buffers, and COM allocations. Also owns the cross-language general rules (Rust `windows`-crate FFI, DLL boundary portability, handle RAII) and Windows repo hygiene: git LF/CRLF line-ending contracts (`.gitattributes` + renormalize) and MSBuild via vswhere.
+Windows/Win32 API coding discipline — mandatory before writing or modifying any Windows API, COM, or native interop code in any language (C/C++, Rust FFI, C#/P-Invoke, PowerShell): Unicode `W` APIs only (never `A`), bytes vs UTF-16 code units, documented failure values (`HRESULT`, `LSTATUS`, `GetLastError`), RAII ownership for handles, buffers, and COM allocations. Also hosts the cross-language general rules (Rust `windows`-crate FFI, DLL boundary portability, handle RAII) that language skills defer to instead of restating.
 
-### ms-c++
+### git-line-endings
 
-House C++ coding discipline — mandatory before writing or modifying any C++ code. Naming (PascalCase types, snake_case functions, `k_` constants), syntax contracts (trailing return types, `noexcept`/`[[nodiscard]]`/`constexpr`), contract-comment documentation, the design playbook (pure public header, fail-fast init, EH-free preallocated hot paths), and MSBuild/vcxproj discipline (`/W4`, `/sdl`, `stdcpplatest`).
+Generic repo hygiene for LF/CRLF churn — triggered by git warnings like "LF will be replaced by CRLF". Owns the repository line-ending contract: `.gitattributes` with explicit CRLF for Windows-tooling files (`.bat`, `.sln`, `.vcxproj`), one-shot `git add --renormalize .`, and `core.autocrlf` as belt-and-suspenders. Not Windows-API specific; applies to any multi-platform repo.
+
+### ms-cpp
+
+House C++ coding discipline — mandatory before writing or modifying any C++ code. Modern syntax requirements (latest standard: concepts over SFINAE, `<format>`, `std::span`, `std::expected`, structured bindings, designated initializers), naming (PascalCase types, snake_case functions, `k_` constants), syntax contracts (trailing return types, `noexcept`/`[[nodiscard]]`/`constexpr`), contract-comment documentation, the design playbook (pure public header, fail-fast init, EH-free preallocated hot paths), and MSBuild/vcxproj discipline (vswhere discovery, `/W4`, `/sdl`, `stdcpplatest`, full build matrix).
 
 ### ms-rust
 
