@@ -40,8 +40,7 @@ pub fn foo() {}
 
 - **`unsafe fn` only when misuse implies UB.** `unsafe fn delete_database()` is a misuse of the marker — use another signal.
 - Every `unsafe` block has a `// SAFETY:` comment or `# Safety` doc proving each invariant; prefer `unsafe`-free designs and safe wrapper crates.
-- FFI-safe types are `#[repr(C)]` and free of non-portable interactions (statics, `TypeId`). Only "portable" data crosses DLL boundaries — Rust-allocated `String`/`Vec`/non-`repr(C)` structs must not.
-- **All Win32 API calls follow the ms-win32 skill**: Unicode `W` APIs only, exact length contracts, documented failure values, handle RAII. Declare imports via the `windows`/`windows-sys` crates rather than hand-written `extern` where a wrapper exists.
+- **Win32 calls, FFI import declarations, and DLL-boundary portability are owned by the ms-win32 skill** (its "Cross-language general" section). Load it and apply it there; those rules are deliberately not restated here.
 
 ## Performance and structure
 
