@@ -16,6 +16,17 @@ Invoke for ANY code touching Windows APIs: `*W`/`*A` functions from kernel32/use
 
 When a rule here conflicts with an API's documented contract, the documented contract wins — note the deviation.
 
+## Cross-language general (Rust FFI and friends)
+
+These rules apply to ANY language calling Windows APIs; each language skill defers here instead of restating them.
+
+- **Declare Win32 imports through the official `windows`/`windows-sys` crates** rather than hand-written `extern "system"` blocks when a declaration exists there; only write raw FFI for APIs the crates don't cover.
+- **`W` functions only from Rust too** — the `windows` crate exposes `*W` entry points; never reach for ANSI aliases.
+- **`PCWSTR`/`PWSTR` discipline**: a `&str` becomes UTF-16 via `HSTRING::from` or `to_vec_with_nul`; never `as_ptr()` a non-nul-terminated buffer, and keep the owning allocation alive for the call.
+- **Failure values are not optional in Rust either**: check `windows::core::Result` / `HRESULT` with `?` or explicit `ok_or`; a `BOOL` that is `FALSE` means call `GetLastError()` immediately, before any other call.
+- **Handle RAII in Rust**: wrap owned `HANDLE`s in a newtype with `Drop` calling `CloseHandle`; never `mem::forget` or hand a raw handle to multiple owners. Borrowed/pseudo-handles (`GetCurrentProcess`) are never dropped.
+- **DLL boundary portability**: only "portable" data crosses a DLL boundary — `#[repr(C)]`, no interaction with statics or `TypeId`, no non-portable values inside. Rust-owned `String`/`Vec`/`Box` and any `#[repr(Rust)]` type must not be transferred between separately compiled DLLs; each DLL has its own statics, layouts, and type IDs.
+
 ## Windows git line-endings (LF/CRLF churn)
 
 `warning: in the working copy of '<file>', LF will be replaced by CRLF the next time Git touches it` means the repo relies on per-user `core.autocrlf` instead of declaring its contract. Never "fix" this by re-saving files or disabling warnings in place. Do:
