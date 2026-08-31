@@ -39,7 +39,7 @@ CI enforces the contract mechanically — `python3 scripts/validate_skills.py` c
 
 - **ms-win32** — Windows/Win32/COM correctness in any language: Unicode `W` APIs only, bytes vs UTF-16 code units, documented failure values (`HRESULT`, `LSTATUS`, `GetLastError`), RAII handle ownership, and the cross-language FFI rules (Rust `windows`-crate discipline, DLL boundary portability) that language skills defer to.
 - **ms-cpp** — house C++ discipline: latest-standard syntax (concepts, `<format>`, `std::span`, `std::expected`), PascalCase/snake_case naming, trailing return types, `noexcept`/`[[nodiscard]]` contracts, contract comments, fail-fast init with EH-free hot paths, and vswhere/MSBuild build discipline.
-- **ms-rust** — house Rust discipline: panic = programming bug vs `Result` = situational failure, `unsafe` restraint with mandatory `Safety` sections, no weasel-word names, `#[expect]` lint overrides, M-CANONICAL-DOCS documentation, and API design rules. Win32 FFI defers to ms-win32.
+- **ms-rust** — house Rust discipline: panic = programming bug vs `Result` = situational failure, errors never swallowed (`.ok()?`, `let _ =`, `unwrap_or*` are all banned), `unsafe` restraint with mandatory `Safety` sections, no weasel-word names, `#[expect]` lint overrides, edition 2024 with the `foo.rs` + `foo/` layout (`mod.rs` banned), M-CANONICAL-DOCS documentation, and API design rules. Win32 FFI defers to ms-win32.
 
 ### Repo hygiene
 
