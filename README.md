@@ -18,7 +18,6 @@ Every skill here follows the same contract, tuned for reliable triggering:
 | Windows platform rules and Win32 API correctness from any language | ferris-windows |
 | C++ style, design, MSBuild | ferris-cpp |
 | Rust style, design, lints | ferris-rust |
-| Line endings, .gitattributes | ferris-line-endings |
 
 CI enforces the contract mechanically — `python3 scripts/validate_skills.py` checks frontmatter shape and YAML safety, name/directory match, description length within loader limits, resolvable links and reference mentions, orphan reference files, and README coverage.
 
@@ -39,22 +38,20 @@ CI enforces the contract mechanically — `python3 scripts/validate_skills.py` c
 - **ferris-cpp** — house C++ discipline: latest-standard syntax (concepts, `<format>`, `std::span`, `std::expected`), PascalCase/snake_case naming, trailing return types, `noexcept`/`[[nodiscard]]` contracts, contract comments, fail-fast init with EH-free hot paths, and vswhere/MSBuild build discipline.
 - **ferris-rust** — house Rust discipline: panic = programming bug vs `Result` = situational failure, errors never swallowed (`.ok()?`, `let _ =`, `unwrap_or*` are all banned), `unsafe` restraint with mandatory `Safety` sections, no weasel-word names, `#[expect]` lint overrides, edition 2024 with the `foo.rs` + `foo/` layout (`mod.rs` banned), M-CANONICAL-DOCS documentation, and API design rules. Windows FFI defers to ferris-windows.
 
-### Repo hygiene
-
-- **ferris-line-endings** — the repository owns its line-ending contract: `.gitattributes` with `text=auto eol=lf` for text sources and explicit CRLF for Windows-tooling files, a one-shot index renormalize plus a one-shot worktree rewrite — `text=auto` alone does not stop the recurring LF/CRLF warning; triggered by LF/CRLF warnings, whole-file diffs, and `^M` churn.
-
 ## Install
 
-One line — every skill, every detected agent, global:
+Interactive — the CLI asks which skills, which agents, and global or project scope:
 
 ```bash
-npx skills add github:MCapricorns/ferris-skills --all -g
+npx skills add github:MCapricorns/ferris-skills
 ```
 
-Single skill:
+Headless picks:
 
 ```bash
-npx skills add github:MCapricorns/ferris-skills --skill ferris-audit -g
+npx skills add github:MCapricorns/ferris-skills -l                  # list before choosing
+npx skills add github:MCapricorns/ferris-skills -s ferris-audit -g  # one skill, global
+npx skills add github:MCapricorns/ferris-skills -s '*' -g           # every skill, global
 ```
 
 Add `--copy` to copy files instead of symlinking. Update later:
