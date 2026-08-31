@@ -15,7 +15,7 @@ Every skill here follows the same contract, tuned for reliable triggering:
 | Proof behind "done / fixed / passing" claims, diff hygiene at commit time, dead-code cleanup, simplification audits | ferris-audit |
 | Root-cause process when anything is broken | ferris-debug |
 | Test quality, mocks, regression tests | ferris-tests |
-| Windows platform rules and Win32 API correctness from any language | ferris-windows-dev |
+| Windows platform rules and Win32 API correctness from any language | ferris-windows |
 | C++ style, design, MSBuild | ferris-cpp |
 | Rust style, design, lints | ferris-rust |
 | Line endings, .gitattributes | ferris-line-endings |
@@ -35,9 +35,9 @@ CI enforces the contract mechanically — `python3 scripts/validate_skills.py` c
 
 ### House style
 
-- **ferris-windows-dev** — Windows platform discipline for ANY code that runs on Windows, no API call required: MAX_PATH and `\\?\` long paths, case-insensitive filenames and reserved device names, open files locked by running processes (sharing violations, linker LNK1168), DLL search order, console code pages and UTF-8, symlinks needing Developer Mode, UAC elevation. Plus Win32/COM correctness in any language: Unicode `W` APIs only, bytes vs UTF-16 code units, documented failure values (`HRESULT`, `LSTATUS`, `GetLastError`), RAII handle ownership, and the cross-language FFI rules (Rust `windows`-crate discipline, DLL boundary portability) that language skills defer to.
+- **ferris-windows** — Windows platform discipline for ANY code that runs on Windows, no API call required: MAX_PATH and `\\?\` long paths, case-insensitive filenames and reserved device names, open files locked by running processes (sharing violations, linker LNK1168), DLL search order, console code pages and UTF-8, symlinks needing Developer Mode, UAC elevation. Plus Win32/COM correctness in any language: Unicode `W` APIs only, bytes vs UTF-16 code units, documented failure values (`HRESULT`, `LSTATUS`, `GetLastError`), RAII handle ownership, and the cross-language FFI rules (Rust `windows`-crate discipline, DLL boundary portability) that language skills defer to.
 - **ferris-cpp** — house C++ discipline: latest-standard syntax (concepts, `<format>`, `std::span`, `std::expected`), PascalCase/snake_case naming, trailing return types, `noexcept`/`[[nodiscard]]` contracts, contract comments, fail-fast init with EH-free hot paths, and vswhere/MSBuild build discipline.
-- **ferris-rust** — house Rust discipline: panic = programming bug vs `Result` = situational failure, errors never swallowed (`.ok()?`, `let _ =`, `unwrap_or*` are all banned), `unsafe` restraint with mandatory `Safety` sections, no weasel-word names, `#[expect]` lint overrides, edition 2024 with the `foo.rs` + `foo/` layout (`mod.rs` banned), M-CANONICAL-DOCS documentation, and API design rules. Windows FFI defers to ferris-windows-dev.
+- **ferris-rust** — house Rust discipline: panic = programming bug vs `Result` = situational failure, errors never swallowed (`.ok()?`, `let _ =`, `unwrap_or*` are all banned), `unsafe` restraint with mandatory `Safety` sections, no weasel-word names, `#[expect]` lint overrides, edition 2024 with the `foo.rs` + `foo/` layout (`mod.rs` banned), M-CANONICAL-DOCS documentation, and API design rules. Windows FFI defers to ferris-windows.
 
 ### Repo hygiene
 

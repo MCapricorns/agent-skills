@@ -41,7 +41,7 @@ pub fn foo() {}
 
 - **`unsafe fn` only when misuse implies UB.** `unsafe fn delete_database()` is a misuse of the marker — use another signal.
 - Every `unsafe` block has a `// SAFETY:` comment or `# Safety` doc proving each invariant; prefer `unsafe`-free designs and safe wrapper crates.
-- **Win32 calls, FFI import declarations, and DLL-boundary portability are owned by the ferris-windows-dev skill** (its "Cross-language general" section). Load it and apply it there; those rules are deliberately not restated here.
+- **Win32 calls, FFI import declarations, and DLL-boundary portability are owned by the ferris-windows skill** (its "Cross-language general" section). Load it and apply it there; those rules are deliberately not restated here.
 
 ## Performance and structure
 
