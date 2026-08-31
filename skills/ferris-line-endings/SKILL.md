@@ -1,5 +1,5 @@
 ---
-name: git-line-endings
+name: ferris-line-endings
 description: Repository line-ending contract — .gitattributes, CRLF vs LF, core.autocrlf. Use when git warns 'LF will be replaced by CRLF' or 'CRLF will be replaced by LF', when that warning keeps coming back after renormalization, when a diff or PR shows every line of a file changed or ^M carriage returns, when files appear modified right after clone or checkout with no edits, when .bat, .cmd, .sln, or .vcxproj files misbehave from LF endings, when adding or editing .gitattributes or core.autocrlf, or when creating a repository that Windows and non-Windows machines will share.
 ---
 

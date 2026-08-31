@@ -1,6 +1,6 @@
 ---
-name: systematic-debugging
-description: Root-cause-first debugging process. Use when anything misbehaves and the cause is not yet proven — a failing or flaky test, a reported bug, a crash, wrong output, a build or CI failure, a performance regression, 'it worked before', 'why does this happen', 'doesn't work' — before proposing or applying any fix, and especially when a quick patch is tempting, a previous fix did not stick, or several components could be at fault. Also triggers on error messages, stack traces, exceptions, segfaults, hangs, races, and intermittent failures. Not for tidying a working change (pre-merge-audit) or for test-quality rules (writing-tests).
+name: ferris-debug
+description: Root-cause-first debugging process. Use when anything misbehaves and the cause is not yet proven — a failing or flaky test, a reported bug, a crash, wrong output, a build or CI failure, a performance regression, 'it worked before', 'why does this happen', 'doesn't work' — before proposing or applying any fix, and especially when a quick patch is tempting, a previous fix did not stick, or several components could be at fault. Also triggers on error messages, stack traces, exceptions, segfaults, hangs, races, and intermittent failures. Not for tidying a working change (ferris-audit) or for test-quality rules (ferris-tests).
 ---
 
 # Systematic Debugging
@@ -14,7 +14,7 @@ No fix without a proven root cause. Guessed patches destroy the evidence and sta
 3. **Diff against the last good state.** Recent commits, dependency bumps, config and environment changes; `git bisect` when the breaking change is not obvious.
 4. **Locate before theorizing.** When the failing path spans components (CI, build, signing; API, service, database), instrument each boundary — log what enters and what exits — run once, and let the evidence name the failing layer. When the error surfaces deep in a call stack, trace the bad value backward to its origin per [references/tracing.md](./references/tracing.md). The fix belongs at the source, not where the error appeared.
 5. **One hypothesis, one minimal change.** State "X causes this because Y", change a single variable, verify. Refuted means a new hypothesis — never a second fix stacked on the first, and never several changes at once. Not knowing is a finding: say what is still unknown and instrument for it.
-6. **Fix with a regression test.** Write the failing repro test first (test quality per writing-tests), apply the single root-cause fix, watch the test pass, confirm the suite stays green. No "while I'm here" changes riding along.
+6. **Fix with a regression test.** Write the failing repro test first (test quality per ferris-tests), apply the single root-cause fix, watch the test pass, confirm the suite stays green. No "while I'm here" changes riding along.
 
 ## Escalation
 

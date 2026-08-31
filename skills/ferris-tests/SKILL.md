@@ -1,6 +1,6 @@
 ---
-name: writing-tests
-description: Standards for tests that catch real breaks. Use when writing or modifying tests, adding a regression test for a bug fix, reviewing a test-heavy diff, deciding what to mock or fake, or when a suite looks tautological, over-mocked, or stays green while production breaks. Also triggers on unit test, integration test, spec, mock, stub, fixture, assertion, coverage, TDD, red-green, and flaky-test cleanup. Diagnosing why a test fails belongs to systematic-debugging; commit-time diff hygiene belongs to pre-merge-audit.
+name: ferris-tests
+description: Standards for tests that catch real breaks. Use when writing or modifying tests, adding a regression test for a bug fix, reviewing a test-heavy diff, deciding what to mock or fake, or when a suite looks tautological, over-mocked, or stays green while production breaks. Also triggers on unit test, integration test, spec, mock, stub, fixture, assertion, coverage, TDD, red-green, and flaky-test cleanup. Diagnosing why a test fails belongs to ferris-debug; commit-time diff hygiene belongs to ferris-audit.
 ---
 
 # Writing Tests
@@ -20,6 +20,6 @@ A test earns its place by naming the break it catches and exercising the real th
 
 ## Warning signs
 
-Setup and assertion share the same object (equality guaranteed); expected values hidden behind loops, builders, or helpers; mock setup dwarfs the test logic; assertions on a `*-mock` test id; a test that greps source text; a sleep that makes it pass (that is a race — see systematic-debugging); tests that exist for coverage with no observable outcome; a name with "and" in it (split it); mocking "just to be safe".
+Setup and assertion share the same object (equality guaranteed); expected values hidden behind loops, builders, or helpers; mock setup dwarfs the test logic; assertions on a `*-mock` test id; a test that greps source text; a sleep that makes it pass (that is a race — see ferris-debug); tests that exist for coverage with no observable outcome; a name with "and" in it (split it); mocking "just to be safe".
 
 When mock setup outgrows the test logic or breaks whenever the mock changes, switch to an integration test with real components — the design is telling you the seam is wrong.

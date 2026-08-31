@@ -1,6 +1,6 @@
 ---
-name: ms-cpp
-description: House C++ style, design, and MSBuild discipline. Use when creating, modifying, reviewing, or refactoring any C++ code — .cpp, .h, .hpp, .cc, or .cxx files, headers, templates, CMake or vcxproj/sln/MSBuild projects, MSVC builds — including one-line fixes and small helpers, and when answering C++ design or API questions. Also triggers on C++, MSVC, Visual Studio, STL, compiler or linker errors that end in C++ edits, and new C++ project setup. Owns naming, modern-syntax requirements, contract comments, and build/project layout. Win32, COM, and interop correctness belongs to ms-win32.
+name: ferris-cpp
+description: House C++ style, design, and MSBuild discipline. Use when creating, modifying, reviewing, or refactoring any C++ code — .cpp, .h, .hpp, .cc, or .cxx files, headers, templates, CMake or vcxproj/sln/MSBuild projects, MSVC builds — including one-line fixes and small helpers, and when answering C++ design or API questions. Also triggers on C++, MSVC, Visual Studio, STL, compiler or linker errors that end in C++ edits, and new C++ project setup. Owns naming, modern-syntax requirements, contract comments, and build/project layout. Win32, COM, and interop correctness belongs to ferris-windows-dev.
 ---
 
 # C++ Development
