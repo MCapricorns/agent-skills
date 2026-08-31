@@ -16,6 +16,7 @@ House standards distilled from the Microsoft Rust guidelines. Read once per sess
 - **Contract violations panic; situational failures return `Result`.** `divide_by(x, y)` panics on `y == 0`; `parse_uri(s)` returns `Result` because parsing can legitimately fail.
 - **Correct by construction beats panicking**: use the type system so invalid inputs cannot be expressed.
 - Applications may use `anyhow`; libraries return concrete, canonical error structs. Never log or stringify an error away where a caller could act on it.
+- **Never swallow an error.** `.ok()?`, `let _ = fallible()`, `.unwrap_or_default()`, and a bare `if let Ok(..)` with no else all erase the failure path — execution continues as if nothing failed. Propagate with `?` on `Result`, or handle and record the error. Demoting `Result` to `Option` (`.ok()?`) to dodge error handling is banned.
 
 ## Documentation (M-CANONICAL-DOCS)
 
@@ -47,6 +48,7 @@ pub fn foo() {}
 - Profile and optimize the hot path early; optimize for throughput (batch work) rather than micro empty cycles; long-running loops expose yield points.
 - Libraries avoid global statics; system calls sit behind traits so they can be mocked.
 - Split the crate when in doubt; features are additive and libraries work out of the box (no required config).
+- **Edition 2024 module layout.** Manifests set `edition = "2024"`; module `foo` lives in `foo.rs` with its submodules under `foo/` — `foo/mod.rs` never appears, including when migrating older crates.
 - Don't glob re-export; don't leak external types through public signatures. Complex construction goes through builders; essential functionality lives on inherent methods.
 - Static verification before hand-off: `cargo fmt --check`, `cargo clippy -- -D warnings`, `cargo test` (smallest targeted subset first).
 

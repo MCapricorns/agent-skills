@@ -43,7 +43,7 @@ CI enforces the contract mechanically — `python3 scripts/validate_skills.py` c
 
 ### Repo hygiene
 
-- **git-line-endings** — the repository owns its line-ending contract: `.gitattributes` with explicit CRLF for Windows-tooling files, one-shot `git add --renormalize .`, `core.autocrlf` as belt-and-suspenders; triggered by LF/CRLF warnings, whole-file diffs, and `^M` churn.
+- **git-line-endings** — the repository owns its line-ending contract: `.gitattributes` with `text=auto eol=lf` for text sources and explicit CRLF for Windows-tooling files, a one-shot index renormalize plus a one-shot worktree rewrite — `text=auto` alone does not stop the recurring LF/CRLF warning; triggered by LF/CRLF warnings, whole-file diffs, and `^M` churn.
 
 ## Install
 

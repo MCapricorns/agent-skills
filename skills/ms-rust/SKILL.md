@@ -20,4 +20,6 @@ House style for every Rust change, however small.
 1. **Panics mean "stop the program".** Panic only on programming errors and poisoned locks; return `Result` for situational failures. Never introduce an `Error` type for contract violations.
 2. **`unsafe` implies UB.** Mark a function `unsafe` only when misuse can cause undefined behavior; every `unsafe` block carries a `Safety` doc section listing caller obligations. Prefer safe APIs (e.g., `windows` crate wrappers) over raw FFI.
 3. **No weasel words.** No `Manager`/`Service`/`Factory` types; name by what the type does (`Bookings`, `BookingDispatcher`); `Builder` is the canonical factory.
-4. **Windows API and FFI work follows the ms-win32 skill** — it owns the Win32 correctness, FFI declaration, and DLL-boundary rules. Load it alongside this one; its rules are deliberately not restated here.
+4. **Errors are never swallowed.** No `.ok()?` (a `Result` demoted to `Option` erases the error), no `let _ =` on fallible calls, no `.ok()`/`.unwrap_or*`/bare `if let Ok` used to make failure invisible. Propagate with `?` or handle and record the error.
+5. **Edition 2024, no `mod.rs`.** Crates target `edition = "2024"`; a module lives in `foo.rs` beside its `foo/` directory — `mod.rs` files must not exist.
+6. **Windows API and FFI work follows the ms-win32 skill** — it owns the Win32 correctness, FFI declaration, and DLL-boundary rules. Load it alongside this one; its rules are deliberately not restated here.
