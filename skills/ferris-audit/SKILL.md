@@ -1,6 +1,6 @@
 ---
 name: ferris-audit
-description: Evidence gate and hygiene pass for finishing work — success claims and commit diffs. Use when about to say done, fixed, passing, working, complete, resolved, or ready for review in a reply, summary, commit message, or PR description, about to tick off a plan item, or accept a subagent's success report; and before any git commit, push, merge, or PR submission — the staged diff gets cleaned even when nobody asks, including trivial or single-file commits. Also when the user asks to clean up, simplify, dedupe, or strip dead code ('clean this up before we commit', 'remove what is unused'), or wants a read-only audit ('what can we delete here'). Triggers on ship it, land it, submit, dead code, unused imports, leftover debug logging, 'should work', 'probably fixed', stale proof. Not for diagnosing broken behavior (ferris-debug) or test-quality rules (ferris-tests). Formatting-only changes may skip.
+description: Evidence gate and hygiene pass for finishing work. Use when about to claim done, fixed, passing, or ready for review in any reply, summary, commit message, or PR, when ticking off a plan item or accepting a subagent's success report, and before any commit, push, merge, or PR — the staged diff gets cleaned even when nobody asks. Also when the user asks to clean up, simplify, dedupe, or strip dead code, or wants a read-only audit of what can be deleted. Triggers on ship it, land it, dead code, unused imports, leftover debug logging, 'should work', 'probably fixed', stale proof. Not for diagnosing broken behavior (ferris-debug) or test-quality rules (ferris-tests). Formatting-only changes may skip.
 ---
 
 # Audit and Verification
@@ -24,7 +24,7 @@ Before any statement implying success — done, fixed, passing, working, resolve
 | Requirements met | line-by-line check against the original request | tests green |
 | Subagent finished X | its diff and artifacts inspected directly | its success message |
 
-Red flags: "should work", "seems to", celebration before the run, committing with a check still unread, counting a partial run as the whole, trusting an agent's report. Green checks prove the checks pass, not that the work is right or complete.
+Red flags: "should work", "seems to", celebration before the run, counting a partial run as the whole, trusting an agent's report. Green checks prove the checks pass, not that the work is right or complete.
 
 ## The hygiene pass — three tiers by authority
 
@@ -32,12 +32,13 @@ Measure twice, cut once — and never force a deletion to look productive. Zero 
 
 ### Pre-commit pass (automatic, every commit)
 
-Mandatory before EVERY commit, push, merge, or PR submission — even when nobody asks, and even for trivial or single-file changes. Only formatting-only changes may skip.
+Mandatory before EVERY commit, push, merge, or PR — even when nobody asks, even for trivial single-file changes. Formatting-only changes may skip.
 
-1. Tidy the staged diff: remove dead code the diff introduces, obvious duplication within it, leftover debris (commented-out code, unused imports/variables, debug output), and structural bloat the diff adds (thin wrappers, needless indirection, one-off flags tangling existing flow). House compliance markers (`// ... guideline compliant ...`) are contracts, not debris.
+1. Tidy the staged diff: remove dead code the diff introduces, duplication within it, leftover debris (commented-out code, unused imports/variables, debug output), and structural bloat the diff adds (thin wrappers, needless indirection, one-off flags). House compliance markers (`// ... guideline compliant ...`) are contracts, not debris.
 2. Cut only what the diff itself added or modified, and only with proof: no production consumers, unreachable, no behavior contract touched. Anything reaching beyond the diff is deep cleanup, not this pass.
-3. Run the smallest targeted checks covering the change (typecheck, lint, touched tests).
-4. Report what was cleaned — files/contracts removed, net reduction, check failures; the user still owns the commit itself.
+3. Every new function or API the diff introduces has a consumer in the same diff — unconsumed additions are deleted, not parked for later.
+4. Structural churn rides separately: renames, moves, and reformats do not mix with behavior changes in one commit.
+5. Run the smallest targeted checks covering the change (typecheck, lint, touched tests), then report what was cleaned; the user still owns the commit itself.
 
 ### Deep cleanup (explicit user intent)
 
@@ -45,4 +46,4 @@ Survey the scope first, then apply every safe, proven, in-scope cut end to end p
 
 ### Survey (read-only)
 
-Read-only investigations — simplification audits, "what can be removed here" — never edit, no matter how obvious the cut. Split the scope along ownership or responsibility lines; for any part you did not cover, say why. Grade every lead by the proof ladder in [references/cleanup.md](./references/cleanup.md) — search hits and analyzer output are leads, not authority. Rank the report so that how sure you are stays a separate question from how much a cut is worth, and have each candidate name the behavior it gives up, the one check that catches a mistaken cut, and the exact missing fact for anything left unresolved. Then stop.
+Read-only investigations — simplification audits, "what can be removed here" — never edit, no matter how obvious the cut. Split the scope along ownership lines; for any part not covered, say why. Grade every lead by the proof ladder in [references/cleanup.md](./references/cleanup.md) — search hits and analyzer output are leads, not authority. Rank the report so that how sure you are stays separate from how much a cut is worth; each candidate names the behavior it gives up, the one check that catches a mistaken cut, and the exact missing fact for anything unresolved. Then stop.

@@ -24,7 +24,7 @@ Target the latest standard the toolset supports (`/std:c++latest`, C++23); new c
 - **`std::expected` (C++23) for fallible returns** in API surfaces that avoid exceptions; exceptions only at cold boundaries. `std::optional` for "may not have a value".
 - **Structured bindings**: `for (auto&& [key, value] : map)`.
 - **Designated initializers** for aggregate options: `Options{.path = p, .console = true}`.
-- **CTAD** (`std::lock_guard lock{m}`) and `auto` where the type is obvious from the initializer; no `auto` that hides a non-obvious conversion.
+- **CTAD and `auto` by default.** Local variables are `auto` wherever the initializer pins the type — constructors, casts, range-for, call results; spell the type out only when `auto` would hide a conversion, bind a proxy (`std::vector<bool>::front()`), or deduce something needlessly general. CTAD (`std::lock_guard lock{m}`) over written-out template arguments.
 - **`if constexpr`** over tag-dispatch/`enable_if` for compile-time branching; `constexpr`/`consteval`/`constinit` wherever evaluation can move to compile time; `inline constexpr` at namespace scope (never `#define`).
 - **`enum class` with explicit underlying type** (`std::uint8_t`, `std::uint32_t`); comment enumerators whose behavior is non-obvious.
 - **`[[nodiscard]]`, `[[likely]]`/`[[unlikely]]`, `[[maybe_unused]]`** where meaningful; no raw `__attribute__`/`__declspec` when a standard attribute exists.
@@ -53,10 +53,23 @@ Target the latest standard the toolset supports (`/std:c++latest`, C++23); new c
 - **Hot paths are EH-free by construction** (compile-time checked format strings, preallocated storage); cold lifecycle allocations convert failure into `false`/empty returns at the `noexcept` boundary. No try/catch to mask caller bugs.
 - **Ordered single-consumer pipelines**: producers claim an ordered ticket and publish; one worker drains in order and batches I/O. Latency-sensitive I/O is async; completion is acknowledged only after it is confirmed.
 
+## Performance, async, and zero-copy
+
+- **Views are parameter types, never stored.** `std::span`/`std::string_view`/ranges views borrow: passing one into a call is safe, storing one past the full expression (`std::string_view s = get_name();`) is silent dangling. Bind rvalue containers to a named variable before taking a view (`borrowed_range` diagnoses the ranges case).
+- **`std::pmr` arenas for build-then-free phases.** Allocation-dense parse/batch stages run `std::pmr` containers over a `monotonic_buffer_resource` that outlives every container using it; never swap or move-assign pmr containers wired to different resources (UB — the allocator does not propagate). Cross-thread arenas use `synchronized_pool_resource`.
+- **`std::move_only_function` for stored callbacks** holding move-only state or needing qualified invocation (`void() const noexcept`); `std::function` stays only where callers must copy. Neither guarantees allocation-free storage — hot paths still preallocate.
+- **`return name;`, never `return std::move(name);`** for locals — the explicit move suppresses copy elision (NRVO); C++17 already guarantees prvalue elision and applies implicit move on return.
+- **Hot-path failures return `std::expected<T, E>`** chained with `and_then`/`or_else`/`transform` — value and error inline, no allocation, no unwinding. Exceptions stay enabled for cold boundaries (MSVC STL assumes `/EHsc`); never turn exceptions off globally.
+- **Optimizer hints**: exhaustive-switch `default:` holds `std::unreachable()`; compile-time branching is `if consteval` — never `if constexpr (std::is_constant_evaluated())`, which is always true at compile time. `[[assume]]` only with a measured win on record (needs VS 2026 toolset).
+- **Async is C++20 coroutines over IOCP today** — `co_await`-style tasks (Asio `use_awaitable` or a house IOCP awaitable); `std::execution` is C++26 with no shipping STL implementation, pilot projects only. Overlapped I/O: the `OVERLAPPED` and its buffer live until completion; release only on the completion path. High-IOPS file work may evaluate IoRing (Windows 11 22H2+, file I/O only) against IOCP with a benchmark — it is an option, not a default.
+- **Container shape follows access pattern**: lookup/iteration-heavy small maps use `std::flat_map` (needs the VS 2026 toolset; until then a sorted vector of pairs), many short vectors use `boost::container::small_vector` — the standard library has no small_vector.
+
 ## Build and project layout
 
 - Typical layout: `include/` + `src|lib/` (library + vcxproj), `tests/`, one `build.bat` that stages the deliverable matrix; solution at repo root. Keep build outputs (`obj/`, `out/`) out of version control.
 - vcxproj: `WarningLevel=Level4`, `SDLCheck=true`, `LanguageStandard=stdcpplatest`; warnings-as-errors for library projects.
+- New x64/ARM64 binaries link with `/CETCOMPAT` (plus `/guard:cf` compile, `/GUARD:CF` link) — skip only for ROP-incompatible techniques such as detours-style hooking.
+- Keep the source tree and build outputs on a Dev Drive (ReFS) with Defender performance mode — not antivirus folder exclusions — for build throughput.
 - Runtime/toolset flavors (MD/MT) are switched per MSBuild pass with a property instead of duplicating solution configurations.
 - **MSBuild is the build system** for anything with `.sln`/`.vcxproj` — never ad-hoc `cl.exe`/`nmake`:
   - Locate MSBuild through **vswhere**, never a hardcoded VS version path:
