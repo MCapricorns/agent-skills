@@ -5,7 +5,7 @@ description: House Rust style and design discipline. Use when creating, modifyin
 
 # Rust Development
 
-House style for every Rust change, however small.
+House style for every Rust change, however small. A codebase with its own established conventions wins over this file — match the surrounding code there.
 
 **Process**:
 
@@ -22,4 +22,4 @@ House style for every Rust change, however small.
 3. **No weasel words.** No `Manager`/`Service`/`Factory` types; name by what the type does (`Bookings`, `BookingDispatcher`); `Builder` is the canonical factory.
 4. **Errors are never swallowed.** No `.ok()?` (a `Result` demoted to `Option` erases the error), no `let _ =` on fallible calls, no `.ok()`/`.unwrap_or*`/bare `if let Ok` used to make failure invisible. Propagate with `?` or handle and record the error.
 5. **Edition 2024, no `mod.rs`.** Crates target `edition = "2024"`; a module lives in `foo.rs` beside its `foo/` directory — `mod.rs` files must not exist.
-6. **Windows API and FFI work follows the ferris-windows skill** — it owns the Win32 correctness, FFI declaration, and DLL-boundary rules. Load it alongside this one; its rules are deliberately not restated here.
+6. **Windows API and FFI work follows the ferris-windows skill** — load it alongside this one; its rules are not restated here.

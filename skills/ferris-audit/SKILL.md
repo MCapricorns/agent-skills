@@ -5,7 +5,7 @@ description: Evidence gate and hygiene pass for finishing work — success claim
 
 # Audit and Verification
 
-Two gates guard the finish line. Success is claimed after running the proof — fresh evidence against the current state of the code, never confidence, memory, extrapolation, or a subagent's word. And no commit ships a diff that still carries its own debris.
+Two gates guard the finish line: no success claim without fresh proof against the current state of the code — never confidence, memory, extrapolation, or a subagent's word — and no commit that still ships its own debris.
 
 ## The verification gate
 
@@ -24,17 +24,13 @@ Before any statement implying success — done, fixed, passing, working, resolve
 | Requirements met | line-by-line check against the original request | tests green |
 | Subagent finished X | its diff and artifacts inspected directly | its success message |
 
-Red flags: "should work", "seems to", celebration before the run, committing with a check still unread, counting a partial run as the whole, trusting an agent's report. Green checks prove the checks pass, not that the work is right or complete — requirements still get compared line by line.
+Red flags: "should work", "seems to", celebration before the run, committing with a check still unread, counting a partial run as the whole, trusting an agent's report. Green checks prove the checks pass, not that the work is right or complete.
 
 ## The hygiene pass — three tiers by authority
 
-1. **Pre-commit pass (automatic, every commit)** — clean the staged diff. May edit, but only within code the current change adds or modifies.
-2. **Deep cleanup (explicit edit intent)** — proven cuts anywhere in scope, applied end to end per [references/cleanup.md](./references/cleanup.md), with structural targets from [references/structure.md](./references/structure.md) and concurrency/lifecycle protections from [references/lifecycle-and-races.md](./references/lifecycle-and-races.md).
-3. **Survey (read-only)** — investigate, rank, report; never edit. Same proof standards, and a report with zero safe candidates is a valid outcome.
-
 Measure twice, cut once — and never force a deletion to look productive. Zero cuts is a valid outcome in every tier.
 
-### Pre-commit pass
+### Pre-commit pass (automatic, every commit)
 
 Mandatory before EVERY commit, push, merge, or PR submission — even when nobody asks, and even for trivial or single-file changes. Only formatting-only changes may skip.
 
@@ -43,17 +39,10 @@ Mandatory before EVERY commit, push, merge, or PR submission — even when nobod
 3. Run the smallest targeted checks covering the change (typecheck, lint, touched tests).
 4. Report what was cleaned — files/contracts removed, net reduction, check failures; the user still owns the commit itself.
 
-### Deep cleanup
+### Deep cleanup (explicit user intent)
 
-Only on explicit user intent; never escalate into edits on your own. Survey the scope first, then apply every safe, proven, in-scope cut end to end per [references/cleanup.md](./references/cleanup.md) (deletion proof, protected surfaces, design records, external findings) and [references/structure.md](./references/structure.md) (red lines, simplification targets), without per-item approval, then re-verify the cleanup diff. When a candidate touches concurrency, cancellation, resource cleanup, defensive copies, or state crossing a process or lifetime boundary, apply [references/lifecycle-and-races.md](./references/lifecycle-and-races.md) before cutting.
+Survey the scope first, then apply every safe, proven, in-scope cut end to end per [references/cleanup.md](./references/cleanup.md) (deletion proof, protected surfaces, design records, external findings) and [references/structure.md](./references/structure.md) (red lines, simplification targets), without per-item approval, then re-verify the cleanup diff. When a candidate touches concurrency, cancellation, resource cleanup, defensive copies, or state crossing a process or lifetime boundary, apply [references/lifecycle-and-races.md](./references/lifecycle-and-races.md) before cutting.
 
-### Survey
+### Survey (read-only)
 
 Read-only investigations — simplification audits, "what can be removed here" — never edit, no matter how obvious the cut. Split the scope along ownership or responsibility lines; for any part you did not cover, say why. Grade every lead by the proof ladder in [references/cleanup.md](./references/cleanup.md) — search hits and analyzer output are leads, not authority. Rank the report so that how sure you are stays a separate question from how much a cut is worth, and have each candidate name the behavior it gives up, the one check that catches a mistaken cut, and the exact missing fact for anything left unresolved. Then stop.
-
-## Honesty rules
-
-- A candidate is not a deletion; never cut without proof.
-- Never force a deletion to look productive, or equate deletion volume with value.
-- Green tests are not proof — of a success claim or of a safe deletion.
-- Classify every reference (production, support-only, unresolved) — a search hit says nothing about whether code runs.

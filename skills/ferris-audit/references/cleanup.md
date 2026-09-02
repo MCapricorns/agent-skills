@@ -43,7 +43,7 @@ Never remove authorization, validation at trust boundaries, security controls, a
 - For proven duplication, extract the smallest stable shared function, type, or module — preferring an existing canonical helper over a new framework — migrate every in-scope caller, and remove the superseded copies. Keep duplication when the copies belong to different domain boundaries, intentionally differ in semantics, are likely to evolve independently, or cannot be unified without weakening types, errors, ordering, performance, security, or readability; state the concrete reason. Preserve tests for each surviving observable boundary and add focused shared-contract coverage when the extraction creates a new reusable unit.
 - When two mechanisms seem to track one fact, [lifecycle-and-races.md](./lifecycle-and-races.md) decides whether a merge is safe; if it is, standardize on whichever copy the strictest consumer trusts and point the rest at it.
 - Synchronize every README, doc, example, API comment, and explanatory comment directly affected by the cleanup. Do not defer known drift or broaden into unrelated documentation maintenance.
-- Re-search removed names and stale documentation. Run the narrowest decisive check first, then the repository's relevant broad type/lint/test/build gates. Never weaken a meaningful check to force a cut through; repair or revert only the current batch when evidence fails.
+- Re-search removed names and stale documentation. Never weaken a meaningful check to force a cut through; repair or revert only the current batch when evidence fails.
 - Prefer net reduction: deletion first, then platform features, then dependencies already present. No replacement glue that erases the reduction.
 
 ## Design records

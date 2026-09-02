@@ -5,20 +5,19 @@ description: House C++ style, design, and MSBuild discipline. Use when creating,
 
 # C++ Development
 
-House style for every C++ change, however small.
+House style for every C++ change, however small. A codebase with its own established conventions wins over this file — match the surrounding code there.
 
 **Process**:
 
 1. Read [references/style-and-design.md](./references/style-and-design.md) once per session before the first C++ edit
 2. Make every new or modified line conformant
-3. Document every public symbol with a contract comment (what it does, ownership, failure behavior)
-4. Write comments in American English unless the user explicitly requests another language
-5. When the file is fully compliant, add a header comment: `// C++ guideline compliant {date}` where {date} is the guideline date/version
+3. Write comments in American English unless the user explicitly requests another language
+4. When the file is fully compliant, add a header comment: `// C++ guideline compliant {date}` where {date} is the guideline date/version
 
 ## Non-negotiables (see references for detail)
 
 1. **Latest-standard syntax.** Target the newest toolset standard (`/std:c++latest` / C++23); use the modern spelling of every construct — `concepts` over SFINAE, `<format>` over printf, `std::span` over pointer+size, structured bindings, designated initializers. Legacy spellings are review-blocking.
-2. **Contracts in comments.** Every non-obvious function states its failure behavior (returns false/empty, never throws from hot paths) and ownership (who frees what) in a comment at the declaration.
+2. **Contracts in comments.** Every public declaration gets a comment stating what it does and — when non-obvious — ownership and failure behavior (returns false/empty, never throws from hot paths).
 3. **`noexcept` on every function that cannot throw**, `[[nodiscard]]` on every function whose result is meaningful, `constexpr` wherever compile-time evaluation works.
 4. **RAII for every OS resource**; raw new/delete and bare HANDLE storage are review-blocking. Scope guards (`make_scope_exit`) for non-RAII cleanup.
 5. **No allocation on hot paths.** Preallocate at init; fail fast at `init()` instead of degrading silently.

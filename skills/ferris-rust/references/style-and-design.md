@@ -41,7 +41,7 @@ pub fn foo() {}
 
 - **`unsafe fn` only when misuse implies UB.** `unsafe fn delete_database()` is a misuse of the marker — use another signal.
 - Every `unsafe` block has a `// SAFETY:` comment or `# Safety` doc proving each invariant; prefer `unsafe`-free designs and safe wrapper crates.
-- **Win32 calls, FFI import declarations, and DLL-boundary portability are owned by the ferris-windows skill** (its "Cross-language general" section). Load it and apply it there; those rules are deliberately not restated here.
+- Win32 calls, FFI declarations, and DLL-boundary portability follow the ferris-windows skill; those rules are not restated here.
 
 ## Performance and structure
 
@@ -49,10 +49,5 @@ pub fn foo() {}
 - Libraries avoid global statics; system calls sit behind traits so they can be mocked.
 - Split the crate when in doubt; features are additive and libraries work out of the box (no required config).
 - **Edition 2024 module layout.** Manifests set `edition = "2024"`; module `foo` lives in `foo.rs` with its submodules under `foo/` — `foo/mod.rs` never appears, including when migrating older crates.
-- Don't glob re-export; don't leak external types through public signatures. Complex construction goes through builders; essential functionality lives on inherent methods.
+- Don't glob re-export; don't leak external types through public signatures. Complex construction goes through builders; essential functionality lives on inherent methods. Public APIs follow the Rust API Guidelines checklist.
 - Static verification before hand-off: `cargo fmt --check`, `cargo clippy -- -D warnings`, `cargo test` (smallest targeted subset first).
-
-## AI collaboration
-
-- Idiomatic APIs (Rust API Guidelines checklist) so humans and agents read them the same way.
-- Thorough docs and directly runnable examples; testable designs with observable-behavior coverage let agents refactor hands-off.
