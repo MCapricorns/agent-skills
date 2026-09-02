@@ -48,8 +48,13 @@ pub fn foo() {}
 - **DLL boundary portability**: only `#[repr(C)]` data crosses a DLL boundary — Rust-owned `String`/`Vec`/`Box` and any `#[repr(Rust)]` type must not be transferred between separately compiled DLLs; each DLL has its own statics, layouts, and type IDs.
 - Windows platform rules (`W` entry points only, UTF-16 discipline, paths, locking, failure values) follow the ferris-windows skill — load it alongside this one.
 
+## Dependencies and reuse
+
+- **Search for an existing crate before building.** Established crates are the default choice — `serde` for (de)serialization, `tokio` for async, `thiserror`/`anyhow` for errors, `rayon` for data parallelism, `crossbeam` for concurrency primitives, `bytes` for buffers. Hand-rolling is justified only by a concrete misfit (weight, license, semantics), stated where the code lands. Crates.io is the first stop, not a last resort.
+
 ## Async and zero-copy
 
+- **tokio is the default async runtime** — the multi-threaded work-stealing scheduler, on Windows (IOCP-backed) and elsewhere; a thread-per-core alternative needs a benchmarked reason, not a preference.
 - **No lock guard crosses `.await`.** `std::sync::Mutex` for short critical sections; `tokio::sync::Mutex` only when the guard must survive an await; keep clippy's `await_holding_lock` on. Blocking or CPU-heavy calls go to `spawn_blocking` — a blocked worker starves every task on it.
 - **`select!` branches must be cancellation-safe.** The losing branch is dropped mid-flight; a lock-acquire await is not cancellation-safe — acquire outside the select or switch to a channel/notify.
 - **Independent awaits run concurrently**, not sequentially: `join!`, `buffered(n)`, `buffered_unordered(n)` — a `for` loop of awaits sums the latencies.

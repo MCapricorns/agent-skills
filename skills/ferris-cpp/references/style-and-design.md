@@ -48,6 +48,7 @@ Target the latest standard the toolset supports (`/std:c++latest`, C++23); new c
 
 ## Design playbook
 
+- **Prefer proven libraries over hand-rolled code.** Standard library first, then established libraries — Asio for async I/O and networking, `boost::container::small_vector` for short vectors, `boost::flat_map` where `std::flat_map` is not yet available. Write in-house code only when nothing fits, and state why in the contract comment; never hand-roll what the toolset already ships.
 - **Layer the public header pure.** Public header is C++/STL only — no Windows headers, no include-order contracts; all OS plumbing lives in exactly one library TU (or an internal contract header included only by library TUs), so consumers link one static lib.
 - **Fail fast at init, never degrade.** `init()` fails instead of silently falling back; after init, no path allocates — overflow/full policies are explicit and counted.
 - **Hot paths are EH-free by construction** (compile-time checked format strings, preallocated storage); cold lifecycle allocations convert failure into `false`/empty returns at the `noexcept` boundary. No try/catch to mask caller bugs.
