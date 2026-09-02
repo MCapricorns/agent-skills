@@ -1,6 +1,6 @@
 # C++ Style and Design
 
-House standards for writing and reviewing C++. Read once per session before writing C++.
+House standards for writing and reviewing C++. Read the sections that govern the change before writing C++.
 
 ## Naming
 
@@ -19,7 +19,7 @@ House standards for writing and reviewing C++. Read once per session before writ
 Target the latest standard the toolset supports (`/std:c++latest`, C++23); new code uses the modern spelling of every construct:
 
 - **`concepts` over SFINAE.** `template <std::integral T>` or `requires` clauses; no `std::enable_if_t` towers in new code.
-- **`<format>` over printf/ostringstream.** `std::format("pid={} n={}", pid, n)`; compile-time-checked format strings; `std::print` where available.
+- **`<format>` over printf/ostringstream.** `std::format("pid={} n={}", pid, n)`; compile-time-checked format strings; `std::print`/`std::println` for console output — they write UTF-16 straight to the console and dodge the code-page mojibake in ferris-windows.
 - **`std::span`/`std::string_view` over pointer+size pairs.** Views borrow — never own; state it in the contract comment.
 - **`std::expected` (C++23) for fallible returns** in API surfaces that avoid exceptions; exceptions only at cold boundaries. `std::optional` for "may not have a value".
 - **Structured bindings**: `for (auto&& [key, value] : map)`.
@@ -48,7 +48,7 @@ Target the latest standard the toolset supports (`/std:c++latest`, C++23); new c
 
 ## Design playbook
 
-- **Prefer proven libraries over hand-rolled code.** Standard library first, then established libraries — Asio for async I/O and networking, `boost::container::small_vector` for short vectors, `boost::flat_map` where `std::flat_map` is not yet available. Write in-house code only when nothing fits, and state why in the contract comment; never hand-roll what the toolset already ships.
+- **What the toolset ships wins.** The standard library and the Windows SDK are the first stop, and never hand-roll what they already provide. A third-party library enters only when nothing shipped covers the need — state the concrete misfit (missing capability, weight, license) in the contract comment and pull it in through vcpkg manifest mode (see "Build and project layout"), never a vendored copy, a submodule, or a manual download.
 - **Layer the public header pure.** Public header is C++/STL only — no Windows headers, no include-order contracts; all OS plumbing lives in exactly one library TU (or an internal contract header included only by library TUs), so consumers link one static lib.
 - **Fail fast at init, never degrade.** `init()` fails instead of silently falling back; after init, no path allocates — overflow/full policies are explicit and counted.
 - **Hot paths are EH-free by construction** (compile-time checked format strings, preallocated storage); cold lifecycle allocations convert failure into `false`/empty returns at the `noexcept` boundary. No try/catch to mask caller bugs.
@@ -61,17 +61,18 @@ Target the latest standard the toolset supports (`/std:c++latest`, C++23); new c
 - **`std::move_only_function` for stored callbacks** holding move-only state or needing qualified invocation (`void() const noexcept`); `std::function` stays only where callers must copy. Neither guarantees allocation-free storage — hot paths still preallocate.
 - **`return name;`, never `return std::move(name);`** for locals — the explicit move suppresses copy elision (NRVO); C++17 already guarantees prvalue elision and applies implicit move on return.
 - **Hot-path failures return `std::expected<T, E>`** chained with `and_then`/`or_else`/`transform` — value and error inline, no allocation, no unwinding. Exceptions stay enabled for cold boundaries (MSVC STL assumes `/EHsc`); never turn exceptions off globally.
-- **Optimizer hints**: exhaustive-switch `default:` holds `std::unreachable()`; compile-time branching is `if consteval` — never `if constexpr (std::is_constant_evaluated())`, which is always true at compile time. `[[assume]]` only with a measured win on record (needs VS 2026 toolset).
-- **Async is C++20 coroutines over IOCP today** — `co_await`-style tasks (Asio `use_awaitable` or a house IOCP awaitable); `std::execution` is C++26 with no shipping STL implementation, pilot projects only. Overlapped I/O: the `OVERLAPPED` and its buffer live until completion; release only on the completion path. High-IOPS file work may evaluate IoRing (Windows 11 22H2+, file I/O only) against IOCP with a benchmark — it is an option, not a default.
-- **Container shape follows access pattern**: lookup/iteration-heavy small maps use `std::flat_map` (needs the VS 2026 toolset; until then a sorted vector of pairs), many short vectors use `boost::container::small_vector` — the standard library has no small_vector.
+- **Optimizer hints**: exhaustive-switch `default:` holds `std::unreachable()`; compile-time branching is `if consteval` — never `if constexpr (std::is_constant_evaluated())`, which is always true at compile time. `[[assume]]` only with a measured before/after win on record.
+- **Async is C++20 coroutines over IOCP today** — `co_await`-style tasks over a house IOCP awaitable; a third-party async runtime enters through vcpkg only when its portability or algorithms are actually needed. `std::execution` is C++26 with no MSVC STL implementation, pilot projects only. Overlapped I/O: the `OVERLAPPED` and its buffer live until completion; release only on the completion path. High-IOPS file work may evaluate IoRing (Windows 11 22H2+, file I/O only) against IOCP with a benchmark — it is an option, not a default.
+- **Container shape follows access pattern**: lookup/iteration-heavy small maps use `std::flat_map` (MSVC STL ships `<flat_map>`/`<flat_set>` in the VS 2026 18.6 toolset; on older toolsets keep a sorted `std::vector` of pairs). The standard library has no small_vector — many short vectors reserve up front, and only a measured win justifies a vcpkg dependency for one.
 
 ## Build and project layout
 
 - Typical layout: `include/` + `src|lib/` (library + vcxproj), `tests/`, one `build.bat` that stages the deliverable matrix; solution at repo root. Keep build outputs (`obj/`, `out/`) out of version control.
 - vcxproj: `WarningLevel=Level4`, `SDLCheck=true`, `LanguageStandard=stdcpplatest`; warnings-as-errors for library projects.
-- New x64/ARM64 binaries link with `/CETCOMPAT` (plus `/guard:cf` compile, `/GUARD:CF` link) — skip only for ROP-incompatible techniques such as detours-style hooking.
+- Control-flow hardening on every new binary: `/guard:cf` compile plus `/GUARD:CF` link. `/CETCOMPAT` marks shadow-stack compatibility and applies to x86 and x64 only — it does nothing on ARM64; skip it for ROP-incompatible techniques such as detours-style hooking.
 - Keep the source tree and build outputs on a Dev Drive (ReFS) with Defender performance mode — not antivirus folder exclusions — for build throughput.
 - Runtime/toolset flavors (MD/MT) are switched per MSBuild pass with a property instead of duplicating solution configurations.
+- **vcpkg manifest mode is the only way third-party code enters the tree**: a `vcpkg.json` above the project file (repo root) with a `builtin-baseline` so every machine resolves the same versions, `vcpkg integrate install` once per machine, and `VcpkgEnableManifest=true` in the vcxproj (Project Properties > Vcpkg > Use Vcpkg Manifest) so the restore runs as part of the build. Dependencies land in `vcpkg_installed/` — keep it out of version control. A solution that builds several triplets sets `VcpkgManifestInstalledBaseDir` rather than one `VcpkgInstalledDir`; shared and CI builds enable binary caching instead of rebuilding ports.
 - **MSBuild is the build system** for anything with `.sln`/`.vcxproj` — never ad-hoc `cl.exe`/`nmake`:
   - Locate MSBuild through **vswhere**, never a hardcoded VS version path:
     ```bat

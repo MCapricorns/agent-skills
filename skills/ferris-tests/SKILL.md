@@ -10,7 +10,7 @@ A test earns its place by naming the break it catches and exercising the real th
 ## Non-negotiables
 
 1. **Name the break first.** Before writing the body, state the production change that would make this test fail; a test with no such change guards nothing.
-2. **Watch every new test fail.** Run it before the fix exists, confirm it fails for the expected reason, then watch it pass. A test never seen red proves nothing.
+2. **Watch every new test fail.** Run it before the fix exists, confirm it fails for the expected reason, then watch it pass. For a test covering behavior that already works, get the same proof by breaking that behavior once on purpose — revert the line, flip the constant — and confirming the test catches it. A test never seen red proves nothing.
 3. **Hand-derive expectations.** Literals and hand-checked fixtures; computing the expected value with the code under test passes no matter what the code does. Table-driven cases with literal want values are the preferred shape.
 4. **No change detectors.** Assert the behavior that depends on a decision, not the decision's surface (constant value, message wording, private structure).
 5. **Mocks earn no assertions.** Mock only the slow or external layer below what the test observes; keep the side effects the test depends on real, and mirror the complete real data structure.

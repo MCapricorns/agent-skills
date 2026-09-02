@@ -18,7 +18,7 @@ When the chain cannot be walked by reading, capture it at runtime: log the suspi
 
 When a path spans several components and any of them could be at fault, stop reasoning and measure. For each boundary in the failing path, log what enters and what exits: values, sizes, environment variables, config as parsed, working directory. Run the failing scenario once and read the trail — the failing layer names itself, and the investigation narrows from "somewhere in the pipeline" to one component.
 
-Practical rules: print to stderr in test code (loggers are often suppressed or buffered); include timestamps when ordering matters; keep the instrumentation in place until the fix is verified, then strip it in the pre-merge pass.
+Practical rules: print to stderr in test code (loggers are often suppressed or buffered); include timestamps when ordering matters; redact credentials, tokens, and connection strings before printing an environment or config dump — print the name and whether it is set, never the value; keep the instrumentation in place until the fix is verified, then strip it in the ferris-audit pre-commit pass.
 
 ## Bisect when the trigger is unknown
 

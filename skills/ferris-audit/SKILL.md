@@ -22,6 +22,7 @@ Before any statement implying success — done, fixed, passing, working, resolve
 | Build succeeds | build exits 0 | linter green, logs "look fine" |
 | Bug fixed | original repro now passes, regression test seen red then green | "the code changed", a plausible-looking diff |
 | Requirements met | line-by-line check against the original request | tests green |
+| Faster or smaller | before/after measurement of the same workload on one machine, repeated | a reasoned argument, a micro-benchmark never run |
 | Subagent finished X | its diff and artifacts inspected directly | its success message |
 
 Red flags: "should work", "seems to", celebration before the run, counting a partial run as the whole, trusting an agent's report. Green checks prove the checks pass, not that the work is right or complete.
@@ -34,7 +35,7 @@ Measure twice, cut once — and never force a deletion to look productive. Zero 
 
 Mandatory before EVERY commit, push, merge, or PR — even when nobody asks, even for trivial single-file changes. Formatting-only changes may skip.
 
-1. Tidy the staged diff: remove dead code the diff introduces, duplication within it, leftover debris (commented-out code, unused imports/variables, debug output), and structural bloat the diff adds (thin wrappers, needless indirection, one-off flags). House compliance markers (`// ... guideline compliant ...`) are contracts, not debris.
+1. Tidy the staged diff: remove dead code the diff introduces, duplication within it, leftover debris (commented-out code, unused imports/variables, temporary debug output), and structural bloat the diff adds (thin wrappers, needless indirection, one-off flags). Durable logging the change is meant to ship is not debris — only instrumentation added to investigate goes.
 2. Cut only what the diff itself added or modified, and only with proof: no production consumers, unreachable, no behavior contract touched. Anything reaching beyond the diff is deep cleanup, not this pass.
 3. Every new function or API the diff introduces has a consumer in the same diff — unconsumed additions are deleted, not parked for later.
 4. Structural churn rides separately: renames, moves, and reformats do not mix with behavior changes in one commit.

@@ -15,8 +15,8 @@ Every skill here follows the same contract, tuned for reliable triggering:
 | Proof behind "done / fixed / passing" claims, diff hygiene at commit time, dead-code cleanup, simplification audits | ferris-audit |
 | Root-cause process when anything is broken | ferris-debug |
 | Test quality, mocks, regression tests | ferris-tests |
-| Windows platform rules and Win32 system-call correctness from any language | ferris-windows |
-| C++ style, design, performance, MSBuild | ferris-cpp |
+| Windows platform rules, PowerShell/batch scripting, Win32 system-call correctness from any language | ferris-windows |
+| C++ style, design, performance, dependencies (vcpkg), MSBuild | ferris-cpp |
 | Rust style, design, async, lints | ferris-rust |
 
 CI enforces the contract mechanically — `python3 scripts/validate_skills.py` checks frontmatter shape and YAML safety, name/directory match, description length within loader limits, resolvable links and reference mentions, orphan reference files, and README coverage.
@@ -25,7 +25,7 @@ CI enforces the contract mechanically — `python3 scripts/validate_skills.py` c
 
 ### Discipline
 
-- **ferris-audit** — the finish-line gate. No success claim without running the proving command fresh and reading its output (claims-to-proof table for tests, builds, bug fixes, requirements, and subagent reports); and a mandatory pre-commit pass that cleans the staged diff even when nobody asks — new APIs must have same-diff consumers, structural churn rides separately from behavior changes. Explicit-intent deep cleanup applies proven cuts end to end with a proof ladder for every deletion; read-only simplification surveys rank evidence and never edit.
+- **ferris-audit** — the finish-line gate. No success claim without running the proving command fresh and reading its output (claims-to-proof table for tests, builds, bug fixes, requirements, performance claims, and subagent reports); and a mandatory pre-commit pass that cleans the staged diff even when nobody asks — new APIs must have same-diff consumers, structural churn rides separately from behavior changes. Explicit-intent deep cleanup applies proven cuts end to end with a proof ladder for every deletion; read-only simplification surveys rank evidence and never edit.
 
 ### Process
 
@@ -34,8 +34,8 @@ CI enforces the contract mechanically — `python3 scripts/validate_skills.py` c
 
 ### House style
 
-- **ferris-windows** — Windows platform discipline for ANY code that runs on Windows, no API call required: MAX_PATH and `\\?\` long paths, case-insensitive filenames and reserved device names, open files locked by running processes (sharing violations, linker LNK1168), DLL search order, the full mojibake cure for console/file encoding (OEM code pages, `SetConsoleOutputCP(CP_UTF8)` vs `ReadConsoleW`, MSVC `/utf-8`, `activeCodePage` manifest, pipe boundaries), virtual terminal sequences, symlinks needing Developer Mode, UAC elevation. Plus Win32 system-call correctness in any language: Unicode `W` APIs only, bytes vs UTF-16 code units, documented failure values (`HRESULT`, `LSTATUS`, `GetLastError`), RAII handle ownership, `cbSize` initialization, pointer-sized types. Language-specific wrapper discipline (Rust `windows`-crate usage, C# P/Invoke) lives in the language skills.
-- **ferris-cpp** — house C++ discipline: latest-standard syntax (concepts, `<format>`, `std::span`, `std::expected`), PascalCase/snake_case naming, trailing return types with `auto` by default, `noexcept`/`[[nodiscard]]` contracts, contract comments, fail-fast init with EH-free hot paths, zero-copy borrowing (`std::pmr` arenas, view-lifetime rules), C++20-coroutine async over IOCP, proven libraries over hand-rolled code, and vswhere/MSBuild build discipline.
+- **ferris-windows** — Windows platform discipline for ANY code that runs on Windows, no API call required: MAX_PATH and `\\?\` long paths, case-insensitive filenames and reserved device names, open files locked by running processes (sharing violations, linker LNK1168), DLL search order, the full mojibake cure for console/file encoding (OEM code pages, `SetConsoleOutputCP(CP_UTF8)` vs `ReadConsoleW`, MSVC `/utf-8`, `activeCodePage` manifest, pipe boundaries), virtual terminal sequences, symlinks needing Developer Mode, UAC elevation. Plus shell discipline for the scripts that drive builds (`$LASTEXITCODE` over `$?`, no `&&` on PowerShell 5.1, explicit output encoding) and Win32 system-call correctness in any language: Unicode `W` APIs only, bytes vs UTF-16 code units, documented failure values (`HRESULT`, `LSTATUS`, `GetLastError`), RAII handle ownership, `cbSize` initialization, pointer-sized types. Rust `windows`-crate wrapper discipline lives in ferris-rust; languages with no house skill (C#, PowerShell) run on these rules alone.
+- **ferris-cpp** — house C++ discipline: latest-standard syntax (concepts, `<format>`, `std::span`, `std::expected`), PascalCase/snake_case naming, trailing return types with `auto` by default, `noexcept`/`[[nodiscard]]` contracts, contract comments, fail-fast init with EH-free hot paths, zero-copy borrowing (`std::pmr` arenas, view-lifetime rules), C++20-coroutine async over IOCP, what the toolset ships before any third party (and vcpkg manifest mode for the rest), and vswhere/MSBuild build discipline.
 - **ferris-rust** — house Rust discipline: panic = programming bug vs `Result` = situational failure, errors never swallowed (`.ok()?`, `let _ =`, `unwrap_or*` are all banned), `unsafe` restraint with mandatory `Safety` sections, no weasel-word names, `#[expect]` lint overrides, edition 2024 with the `foo.rs` + `foo/` layout (`mod.rs` banned), M-CANONICAL-DOCS documentation, API design rules, established crates over hand-rolling, and tokio-based async/zero-copy discipline (no guards across `.await`, `spawn_blocking` for blocking work, borrowed parses, `Bytes` views). Windows FFI defers to ferris-windows for platform rules.
 
 ## Install

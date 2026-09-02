@@ -1,6 +1,6 @@
 # Rust Style and Design
 
-House standards distilled from the Microsoft Rust guidelines. Read once per session before writing Rust.
+House standards distilled from the Microsoft Rust guidelines. Read the sections that govern the change before writing Rust.
 
 ## Naming and idioms
 
@@ -16,7 +16,7 @@ House standards distilled from the Microsoft Rust guidelines. Read once per sess
 - **Contract violations panic; situational failures return `Result`.** `divide_by(x, y)` panics on `y == 0`; `parse_uri(s)` returns `Result` because parsing can legitimately fail.
 - **Correct by construction beats panicking**: use the type system so invalid inputs cannot be expressed.
 - Applications may use `anyhow`; libraries return concrete, canonical error structs. Never log or stringify an error away where a caller could act on it.
-- **Never swallow an error.** `.ok()?`, `let _ = fallible()`, `.unwrap_or_default()`, and a bare `if let Ok(..)` with no else all erase the failure path — execution continues as if nothing failed. Propagate with `?` on `Result`, or handle and record the error. Demoting `Result` to `Option` (`.ok()?`) to dodge error handling is banned.
+- **Why swallowed errors are banned** (SKILL.md lists the banned forms): each one continues execution as if nothing failed, so the caller that could have retried, degraded, or reported sees a success it never got. Handling means propagating with `?`, or recording the failure where an operator can see it — not making it invisible.
 
 ## Documentation (M-CANONICAL-DOCS)
 

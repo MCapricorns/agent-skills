@@ -1,11 +1,11 @@
 ---
 name: ferris-windows
-description: Windows platform rules and system-call correctness, in any language. Use when writing, modifying, or reviewing anything that runs on Windows, even with no system call in sight — MAX_PATH and \\?\ long paths, case-insensitive filenames, files locked by running processes (sharing violations, LNK1168), DLL search order, console code pages and UTF-8, symlinks, UAC elevation — and when calling into Windows via windows.h, the Rust windows/windows-sys crates, raw extern FFI, C# P/Invoke, or PowerShell. Also triggers on HANDLE, HWND, HRESULT, GetLastError, CreateFileW, UTF-16, W- or A-suffixed functions, DLL boundary design. C++ and Rust naming or style belong to ferris-cpp and ferris-rust.
+description: Windows platform rules, shell scripting, and system-call correctness, in any language. Use when writing, modifying, or reviewing anything that runs on Windows, even with no system call in sight — MAX_PATH and \\?\ long paths, case-insensitive filenames, files locked by running processes (sharing violations, LNK1168), DLL search order, console code pages and UTF-8, symlinks, UAC elevation — and when writing PowerShell, .bat, or .cmd scripts (exit codes, chaining, output encoding) or calling into Windows via windows.h, the Rust windows/windows-sys crates, raw extern FFI, or C# P/Invoke. Also triggers on HANDLE, HWND, HRESULT, GetLastError, CreateFileW, UTF-16, W- or A-suffixed functions, LASTEXITCODE, DLL boundary design. C++ and Rust naming or style belong to ferris-cpp and ferris-rust.
 ---
 
 # Windows Development Discipline
 
-Invoke for ANY code that runs on Windows. The platform rules apply with no system call in sight; the system-call rules apply the moment code touches Windows. Rationale, edge cases, and Rust/FFI detail: [references/rules.md](./references/rules.md).
+Invoke for ANY code that runs on Windows. The platform rules apply with no system call in sight; the shell rules apply to every script that drives a build or a tool; the system-call rules apply the moment code touches Windows. Rationale, edge cases, and Rust/FFI detail: [references/rules.md](./references/rules.md).
 
 ## Platform rules (no system call required)
 
@@ -25,4 +25,10 @@ Invoke for ANY code that runs on Windows. The platform rules apply with no syste
 3. **Check documented failure values** — `FAILED`/`SUCCEEDED` for `HRESULT`, `ERROR_SUCCESS` for `LSTATUS`; capture `GetLastError()` only where documented (many calls invalidate it).
 4. **RAII ownership with matching release** for handles, buffers, and COM allocations; never release borrowed or pseudo-handles. Initialize size/version fields (`cbSize`); use pointer-sized types (`DWORD_PTR`, `INT_PTR`) without truncation.
 
-When a rule here conflicts with a documented contract, the documented contract wins — note the deviation. Language-specific wrapper discipline (Rust `windows`-crate usage, C# P/Invoke shapes) lives in the language skills; the platform rules here apply to every language.
+## Shell and scripting rules
+
+1. **Native exit codes live in `$LASTEXITCODE`** — `$?` and `$ErrorActionPreference` govern cmdlets, not native tools; a script that drives `msbuild`, `cargo`, or `git` checks the code after each call and stops on the first failure.
+2. **`&&` and `||` require PowerShell 7+** — Windows PowerShell 5.1 chains with `;` plus an explicit code check, and no POSIX shell assumptions (globbing, quoting, `2>&1` semantics) carry over.
+3. **Declare the encoding before emitting non-ASCII** — `[Console]::OutputEncoding` decides how a native tool's output is decoded, `$OutputEncoding` what PowerShell pipes into one; `Out-File`/`Set-Content` defaults differ between 5.1 and 7, so pass `-Encoding utf8` explicitly.
+
+When a rule here conflicts with a documented contract, the documented contract wins — say so in the code comment and in the reply. Rust `windows`-crate wrapper discipline lives in ferris-rust; for languages with no house skill (C#, PowerShell), these rules plus the documented signature are the whole contract.

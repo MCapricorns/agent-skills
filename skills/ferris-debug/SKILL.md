@@ -14,7 +14,7 @@ No fix without a proven root cause. Guessed patches destroy the evidence and sta
 3. **Diff against the last good state** — recent commits, dependency bumps, config and environment changes; `git bisect` when the breaking change is not obvious.
 4. **Locate before theorizing** — trace bad values backward to their origin and instrument component boundaries (per references/tracing.md); the fix belongs at the source, not where the error appeared.
 5. **One hypothesis, one minimal change** — state "X causes this because Y", change a single variable, verify. Refuted means a *new* hypothesis — never a second fix stacked on the first, never several changes at once. Stuck means instrument more, not guess differently.
-6. **Fix with a regression test** — the repro test must fail on the unfixed code with the reported symptom *before* any fix is applied, then pass after the single root-cause fix. Test quality per ferris-tests. No "while I'm here" changes riding along.
+6. **Fix with a regression test** — run it against the unfixed code first and require the *reported* symptom, not merely some failure; then apply the single root-cause fix and watch it pass. Test shape and quality per ferris-tests. No "while I'm here" changes riding along; leftover instrumentation goes out in the ferris-audit pre-commit pass.
 
 ## Hard rules
 

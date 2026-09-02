@@ -5,15 +5,14 @@ description: House Rust style and design discipline. Use when creating, modifyin
 
 # Rust Development
 
-House style for every Rust change, however small. A codebase with its own established conventions wins over this file — match the surrounding code there.
+House style for every Rust change, however small. A codebase with its own established conventions wins on style — match the surrounding code there. Correctness rules do not bend to local habit: platform rules (ferris-windows), error discipline, and `unsafe` obligations apply even where the surrounding code violates them.
 
 **Process**:
 
-1. Read [references/style-and-design.md](./references/style-and-design.md) once per session before the first Rust edit
+1. Before the first Rust edit, read the sections of [references/style-and-design.md](./references/style-and-design.md) that govern the change — naming and error discipline always; documentation, unsafe/FFI, dependency, async, or performance sections when the change touches them
 2. Make every new or modified line conformant
 3. Document every public item with M-CANONICAL-DOCS sections (`Examples`/`Errors`/`Panics`/`Safety`/`Abort` when applicable)
 4. Write comments in American English unless the user explicitly requests another language
-5. When the file is fully compliant, add a comment: `// Rust guideline compliant {date}` where {date} is the guideline date/version
 
 ## Non-negotiables (see references for detail)
 
