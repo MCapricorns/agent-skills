@@ -1,11 +1,11 @@
 ---
 name: ferris-windows
-description: Windows platform rules, shell scripting, and system-call correctness, in any language. Use when writing, modifying, or reviewing anything that runs on Windows, even with no system call in sight — MAX_PATH and \\?\ long paths, case-insensitive filenames, files locked by running processes (sharing violations, LNK1168), DLL search order, console code pages and UTF-8, symlinks, UAC elevation — and when writing PowerShell, .bat, or .cmd scripts (exit codes, chaining, output encoding) or calling into Windows via windows.h, the Rust windows/windows-sys crates, raw extern FFI, or C# P/Invoke. Also triggers on HANDLE, HWND, HRESULT, GetLastError, CreateFileW, UTF-16, W- or A-suffixed functions, LASTEXITCODE, DLL boundary design. C++ and Rust naming or style belong to ferris-cpp and ferris-rust.
+description: Windows platform, shell, and system-interface discipline for code and builds targeting Windows. Use for Windows-targeted code even with no system call in sight; PowerShell or batch scripts; path, filesystem, console, DLL, or elevation behavior; Win32, COM, P/Invoke, or FFI integration; and Windows-specific build failures. C++ and Rust language design and style belong to ferris-cpp and ferris-rust.
 ---
 
 # Windows Development Discipline
 
-Invoke for ANY code that runs on Windows. The platform rules apply with no system call in sight; the shell rules apply to every script that drives a build or a tool; the system-call rules apply the moment code touches Windows. Rationale, edge cases, and Rust/FFI detail: [references/rules.md](./references/rules.md).
+The platform rules apply with no system call in sight; the shell rules apply to scripts that drive a build or a tool; the system-call rules apply the moment code touches Windows. Rationale, edge cases, and Rust/FFI detail: [references/rules.md](./references/rules.md).
 
 ## Platform rules (no system call required)
 

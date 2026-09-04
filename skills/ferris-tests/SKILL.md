@@ -1,6 +1,6 @@
 ---
 name: ferris-tests
-description: Standards for tests that catch real breaks. Use when writing or modifying tests, adding a regression test for a bug fix, reviewing a test-heavy diff, deciding what to mock or fake, or when a suite looks tautological, over-mocked, or stays green while production breaks. Also triggers on unit test, integration test, spec, mock, stub, fixture, assertion, coverage, TDD, red-green, property-based testing, mutation testing, and flaky-test cleanup. Diagnosing why a test fails belongs to ferris-debug; commit-time diff hygiene belongs to ferris-audit.
+description: Standards for test design, change, and review. Use when writing or modifying tests; selecting mocks, fakes, or fixtures; strengthening weak or flaky suites; or applying regression, property-based, or mutation testing. Diagnosing why a test fails belongs to ferris-debug; final diff hygiene belongs to ferris-audit.
 ---
 
 # Writing Tests

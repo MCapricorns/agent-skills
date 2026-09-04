@@ -1,11 +1,11 @@
 ---
 name: ferris-cpp
-description: House C++ style, design, performance, and MSBuild discipline. Use when creating, modifying, reviewing, or refactoring any C++ code — .cpp/.h/.hpp/.cc/.cxx, templates, vcxproj/sln/MSBuild projects, MSVC builds — including one-line fixes and small helpers, and for C++ design or API questions. Also triggers on C++, MSVC, Visual Studio, STL, vcpkg, compiler or linker errors ending in C++ edits, hot-path, allocation, coroutine, async I/O, span, string_view, pmr, expected, move_only_function, or flat_map questions. Owns naming, modern syntax, contract comments, performance/async/zero-copy rules, dependency policy, and build layout. Win32, COM, and interop correctness belongs to ferris-windows.
+description: House discipline for C++ source, project, API, build, and performance work. Use for C++ code or project changes, design and API review, compiler or linker failures that require C++ edits, performance or asynchronous I/O work, dependency decisions, and MSBuild configuration. Windows platform, Win32, COM, and interop correctness belongs to ferris-windows.
 ---
 
 # C++ Development
 
-House style for every C++ change, however small. A codebase with its own established conventions wins on style — match the surrounding code there. Correctness rules do not bend to local habit: platform rules (ferris-windows), RAII ownership, and failure handling apply even where the surrounding code violates them.
+House style for C++ changes. A codebase with its own established conventions wins on style — match the surrounding code there. Correctness rules do not bend to local habit: platform rules (ferris-windows), RAII ownership, and failure handling apply even where the surrounding code violates them.
 
 **Process**:
 

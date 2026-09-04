@@ -1,6 +1,6 @@
 ---
 name: ferris-debug
-description: Root-cause-first debugging. Use when anything misbehaves and the cause is not yet proven — failing or flaky tests, reported bugs, crashes, wrong output, build or CI failures, performance regressions, hangs, races, 'it worked before', 'why does this happen' — before proposing or applying any fix, especially when a quick patch is tempting, a previous fix did not stick, or several components could be at fault. Also triggers on error messages, stack traces, exceptions, segfaults, and intermittent failures. Not for tidying a working change (ferris-audit) or test-quality rules (ferris-tests).
+description: Root-cause workflow for failures and regressions whose cause is not yet proven. Use to investigate reproducible or intermittent incorrect behavior, crashes, failing builds or tests, performance regressions, hangs, and races before proposing or applying a fix. Cleanup of a working change belongs to ferris-audit; test design and quality belong to ferris-tests.
 ---
 
 # Systematic Debugging

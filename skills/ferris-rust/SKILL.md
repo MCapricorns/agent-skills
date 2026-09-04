@@ -1,11 +1,11 @@
 ---
 name: ferris-rust
-description: House Rust style and design discipline. Use when creating, modifying, reviewing, or refactoring any Rust code — .rs, Cargo.toml or workspace changes, cargo build/test/clippy/fmt, proc macros — including one-line fixes and small helpers, and for Rust API-design questions. Also triggers on Rust, cargo, crate, clippy, rustc errors, unsafe, lifetimes, traits, borrow-checker fights, async, tokio, await, spawn_blocking, cancellation safety, Bytes, zero-copy, allocation, or hot-path performance work. Owns naming, panic and error discipline, documentation, lints, API design, and async/zero-copy rules. Win32 FFI correctness belongs to ferris-windows.
+description: House discipline for Rust source, Cargo projects, APIs, builds, and performance-sensitive work. Use for Rust code or workspace changes, design and API review, compiler or Clippy failures that require Rust edits, unsafe or asynchronous code, and performance work. Windows platform and FFI correctness belongs to ferris-windows.
 ---
 
 # Rust Development
 
-House style for every Rust change, however small. A codebase with its own established conventions wins on style — match the surrounding code there. Correctness rules do not bend to local habit: platform rules (ferris-windows), error discipline, and `unsafe` obligations apply even where the surrounding code violates them.
+House style for Rust changes. A codebase with its own established conventions wins on style — match the surrounding code there. Correctness rules do not bend to local habit: platform rules (ferris-windows), error discipline, and `unsafe` obligations apply even where the surrounding code violates them.
 
 **Process**:
 

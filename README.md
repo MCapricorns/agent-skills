@@ -6,7 +6,7 @@ Personal cross-agent skill collection — the **ferris** family. Every skill is 
 
 Every skill here follows the same contract, tuned for reliable triggering:
 
-- **The description is the trigger.** It states what the skill is in one clause, then the concrete situations that should fire it — file types, tool names, quoted error text, and the phrasings people actually use. It never summarizes the skill's rules: agents that see a summary follow the summary and skip the body. Descriptions stay lean — they ride in every session's context.
+- **The description is the trigger.** It states the skill's purpose in one clause, then generalized activation categories, a few discriminative terms, and boundaries with neighboring skills. It routes rather than summarizing the body. Keep it lean — it rides in every session's context.
 - **One owner per rule.** Each concern lives in exactly one skill; neighbors point to it by name instead of restating it, and descriptions carry negative triggers ("X belongs to skill-y") so skills never fight over the same task.
 - **Every skill is progressive disclosure.** SKILL.md carries one screen of load-bearing rules only — imperative lines, no rationale; the why, edge cases, tooling names, and examples live in `references/` and load only when a rule needs unpacking.
 

@@ -1,6 +1,6 @@
 ---
 name: ferris-audit
-description: Evidence gate and hygiene pass for finishing work. Use when about to claim done, fixed, passing, or ready for review in any reply, summary, commit message, or PR, when ticking off a plan item or accepting a subagent's success report, and before any commit, push, merge, or PR — the staged diff gets cleaned even when nobody asks. Also when the user asks to clean up, simplify, dedupe, or strip dead code, or wants a read-only audit of what can be deleted. Triggers on ship it, land it, dead code, unused imports, leftover debug logging, 'should work', 'probably fixed', stale proof. Not for diagnosing broken behavior (ferris-debug) or test-quality rules (ferris-tests). Formatting-only changes may skip.
+description: Evidence gate and hygiene pass for finishing work. Use when claiming completion, accepting a delegated result, or before any commit, push, merge, or PR; also for scoped cleanup, simplification, dead-code removal, and read-only deletion audits. Cause-unproven failures belong to ferris-debug; test design belongs to ferris-tests. Formatting-only changes may skip.
 ---
 
 # Audit and Verification
@@ -33,7 +33,7 @@ Measure twice, cut once — and never force a deletion to look productive. Zero 
 
 ### Pre-commit pass (automatic, every commit)
 
-Mandatory before EVERY commit, push, merge, or PR — even when nobody asks, even for trivial single-file changes. Formatting-only changes may skip.
+Mandatory before each commit, push, merge, or PR, including small single-file changes. Formatting-only changes may skip.
 
 1. Tidy the staged diff: remove dead code the diff introduces, duplication within it, leftover debris (commented-out code, unused imports/variables, temporary debug output), and structural bloat the diff adds (thin wrappers, needless indirection, one-off flags). Durable logging the change is meant to ship is not debris — only instrumentation added to investigate goes.
 2. Cut only what the diff itself added or modified, and only with proof: no production consumers, unreachable, no behavior contract touched. Anything reaching beyond the diff is deep cleanup, not this pass.
