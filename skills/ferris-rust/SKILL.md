@@ -5,7 +5,7 @@ description: House discipline for Rust source, Cargo projects, APIs, builds, and
 
 # Rust Development
 
-House style for Rust changes. A codebase with its own established conventions wins on style — match the surrounding code there. Correctness rules do not bend to local habit: platform rules (ferris-windows), error discipline, and `unsafe` obligations apply even where the surrounding code violates them.
+House defaults for new or unconstrained Rust projects. In an existing repository, its supported toolchain/MSRV, edition, build and dependency policy, and established conventions take precedence; do not force a migration. Portable safety and correctness obligations — platform contracts (ferris-windows), error discipline, and `unsafe` obligations — still apply.
 
 **Process**:
 
@@ -14,12 +14,12 @@ House style for Rust changes. A codebase with its own established conventions wi
 3. Document every public item with M-CANONICAL-DOCS sections (`Examples`/`Errors`/`Panics`/`Safety`/`Abort` when applicable)
 4. Write comments in American English unless the user explicitly requests another language
 
-## Non-negotiables (see references for detail)
+## House defaults and portable obligations (see references for detail)
 
 1. **Panics mean "stop the program".** Panic only on programming errors and poisoned locks; return `Result` for situational failures. Never introduce an `Error` type for contract violations.
-2. **`unsafe` implies UB.** Mark a function `unsafe` only when misuse can cause undefined behavior; every `unsafe` block carries a `Safety` doc section listing caller obligations. Prefer safe APIs (e.g., `windows` crate wrappers) over raw FFI.
+2. **`unsafe` marks explicit UB obligations.** `unsafe fn`, `unsafe static`, and `unsafe trait` define documented caller, access, and implementor obligations respectively. `unsafe {}` uses a nearby `// SAFETY:` proof; `unsafe impl`, `unsafe extern`, and `#[unsafe(...)]` each require context-appropriate proof that their invariants, ABI/signatures, or attribute requirements are satisfied. Prefer safe APIs over raw FFI.
 3. **No weasel words.** No `Manager`/`Service`/`Factory` types; name by what the type does (`Bookings`, `BookingDispatcher`); `Builder` is the canonical factory.
 4. **Errors are never swallowed.** No `.ok()?` (a `Result` demoted to `Option` erases the error), no `let _ =` on fallible calls, no `.ok()`/`.unwrap_or*`/bare `if let Ok` used to make failure invisible. Propagate with `?` or handle and record the error.
-5. **Edition 2024, no `mod.rs`.** Crates target `edition = "2024"`; a module lives in `foo.rs` beside its `foo/` directory — `mod.rs` files must not exist.
+5. **Edition 2024 and the `foo.rs` + `foo/` module layout are unconstrained-project defaults.** New or unconstrained house crates use them; existing repositories retain their supported edition/MSRV and established layout unless a migration is requested.
 6. **Windows platform rules follow the ferris-windows skill** (W entry points, UTF-16, paths, locking, failure values) — load it alongside; the Rust-side FFI specifics live in references "Unsafe, FFI, and Windows APIs".
 7. **Zero-copy by default; async never blocks.** Parsed structures borrow the input buffer, network frames move as `Bytes` views of one buffer, lock guards never cross `.await`, and blocking or CPU-heavy work goes to `spawn_blocking` (see references "Async and zero-copy").

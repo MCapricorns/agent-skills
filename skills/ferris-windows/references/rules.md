@@ -6,9 +6,9 @@ Read when a rule in SKILL.md needs unpacking.
 
 - **`\\?\` and MAX_PATH**: the 260-char ceiling applies to most file APIs unless long paths are enabled — which needs *both* the machine policy (`LongPathsEnabled=1`) and a `longPathAware` manifest, and Explorer plus most third-party apps still don't handle long paths. `\\?\` remains the unconditional fallback; note it disables normalization — fully-qualified backslash paths only, no relative segments, no `.`/`..`.
 - **Case-insensitivity**: the filesystem preserves the first casing written; two files differing only in case cannot coexist, and a case-only rename needs create-temp → delete-old → rename-temp.
-- **Locking**: Windows denies deleting or replacing any file a process holds open — a running exe, a loaded DLL, an open log. Closing the holder (or ending the process) is the fix; retrying the delete is a loop.
+- **Locking**: deleting or replacing an open file succeeds only when existing handles' share modes permit the requested operation, notably through `FILE_SHARE_DELETE`. A sharing violation means a holder denies that operation; closing the holder is one remedy, while retrying helps only if it will release the handle.
 - **DLL search order**: application dir, system dirs, then PATH (plus the working directory in legacy modes). Bare-name loads pick whichever matches first — hijack territory; `LoadLibraryExW` with an absolute path (or `LOAD_LIBRARY_SEARCH_*` flags) pins the right one.
-- **Symlinks**: the Developer-Mode/`SeCreateSymbolicLinkPrivilege` requirement is unchanged as of Windows 11 24H2; junctions need no privilege. Treat symlink creation as fallible — degrade to junction or copy.
+- **Symlinks**: Developer Mode or `SeCreateSymbolicLinkPrivilege` may be required for creation. No fallback is transparent: junctions require no privilege but work only for directories, and copies lose link/update semantics. Use a fallback only when its behavior is explicitly accepted and preserved; otherwise fail clearly.
 - **Elevation**: "run everything as administrator" disables UAC's least-privilege point; request elevation per documented admin operation (HKLM writes, services, protected files).
 
 ## Console and file encoding — the mojibake cure

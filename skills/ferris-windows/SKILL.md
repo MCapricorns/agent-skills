@@ -11,11 +11,11 @@ The platform rules apply with no system call in sight; the shell rules apply to 
 
 1. **Deep absolute paths get the `\\?\` prefix** — the 260-char `MAX_PATH` ceiling applies unless long paths are enabled.
 2. **Names are case-insensitive but case-preserving** — `Foo.rs` and `foo.rs` collide; case-only renames take a two-step move. Reserved device names (`CON`, `PRN`, `AUX`, `NUL`, `COM1`–`COM9`, `LPT1`–`LPT9`) are never valid filenames.
-3. **An open file is a locked file** — sharing violations and linker `LNK1168` mean stop or close the holder first; a retry loop that never closes the holder is not a fix.
+3. **Open handles control delete and replace sharing** — the operation succeeds only when existing handles' share modes permit it, notably `FILE_SHARE_DELETE`; a sharing violation means a holder denies the requested operation. Closing that holder is one remedy; blind retry is not a fix.
 4. **Load non-system DLLs by explicit absolute path**, never by bare name — the search order will load the wrong one.
 5. **Console text is not UTF-8 by default** — the OEM code page (936 on Chinese-locale systems) renders UTF-8 bytes as mojibake: set `SetConsoleOutputCP(CP_UTF8)` at startup (or `chcp 65001` interactively) and state the encoding at every process and pipe boundary — a redirected pipe carries raw bytes with no code page. Full encoding decision table: references/rules.md.
 6. **New CLI output uses virtual terminal sequences** — enable `ENABLE_VIRTUAL_TERMINAL_PROCESSING` once at startup; classic Console API stays only for the bootstrap calls (`GetStdHandle`/`SetConsoleMode`). Keyboard input reads `ReadConsoleW` — cooked-mode UTF-8 input is still incomplete.
-7. **Symlinks need Developer Mode or admin; junctions (`mklink /J`) don't** — prefer junctions unprivileged; a failed symlink creation degrades gracefully (copy, junction), never crashes.
+7. **Treat symlink creation as fallible** — Developer Mode or privilege may be required; junctions are directory-only and copies lose link/update semantics. Use only an explicitly accepted behavior-preserving fallback, or fail clearly.
 8. **Run unelevated by default** — elevation only for documented admin operations.
 
 ## System-call rules
@@ -27,7 +27,7 @@ The platform rules apply with no system call in sight; the shell rules apply to 
 
 ## Shell and scripting rules
 
-1. **Native exit codes live in `$LASTEXITCODE`** — `$?` and `$ErrorActionPreference` govern cmdlets, not native tools; a script that drives `msbuild`, `cargo`, or `git` checks the code after each call and stops on the first failure.
+1. **Native exit codes live in `$LASTEXITCODE`** — `$?` is a Boolean derived from native exit status; in PowerShell 7.4+, `$ErrorActionPreference` can act on native nonzero exits when `$PSNativeCommandUseErrorActionPreference` is enabled. For cross-version scripts, check numeric `$LASTEXITCODE` after each native tool and stop on failure.
 2. **`&&` and `||` require PowerShell 7+** — Windows PowerShell 5.1 chains with `;` plus an explicit code check, and no POSIX shell assumptions (globbing, quoting, `2>&1` semantics) carry over.
 3. **Declare the encoding before emitting non-ASCII** — `[Console]::OutputEncoding` decides how a native tool's output is decoded, `$OutputEncoding` what PowerShell pipes into one; `Out-File`/`Set-Content` defaults differ between 5.1 and 7, so pass `-Encoding utf8` explicitly.
 

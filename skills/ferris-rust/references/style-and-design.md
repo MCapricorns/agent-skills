@@ -28,7 +28,7 @@ House standards distilled from the Microsoft Rust guidelines. Read the sections 
 /// # Examples   — one or more usage examples
 /// # Errors     — for `Result` returns: known error conditions
 /// # Panics     — when this may panic
-/// # Safety     — for `unsafe`: all conditions the caller must uphold
+/// # Safety     — obligations required to call, access, or implement an unsafe API
 /// # Abort      — when this may abort the process
 pub fn foo() {}
 ```
@@ -39,11 +39,11 @@ pub fn foo() {}
 
 ## Unsafe, FFI, and Windows APIs
 
-- **`unsafe fn` only when misuse implies UB.** `unsafe fn delete_database()` is a misuse of the marker — use another signal.
-- Every `unsafe` block has a `// SAFETY:` comment or `# Safety` doc proving each invariant; prefer `unsafe`-free designs and safe wrapper crates.
-- **Declare Windows imports through the official crates, not hand-written `extern "system"` blocks**: `windows-sys` for plain C-style calls, `windows`/`windows-core` for COM/WinRT, and the focused crates (`windows-registry`, `windows-threading`, …) when one covers the need. Every 0.x minor breaks APIs — pin the version and upgrade stepwise, never float it.
+- **Use unsafe API markers only for UB-relevant contracts.** `unsafe fn` and `unsafe trait` document caller and implementor obligations in `# Safety`; `unsafe static` documents its access conditions. Ordinary destructive operations stay safe APIs.
+- **Assertion contexts discharge those conditions.** An `unsafe {}` block uses a nearby `// SAFETY:` proof; an `unsafe impl` records why implementor obligations hold; an `unsafe extern` author establishes ABI/signature correctness and documents callable safety where relevant; and `#[unsafe(...)]` requires proof that the attribute's safety requirements hold. Prefer `unsafe`-free designs and safe wrapper crates.
+- **Declare Windows imports through the official crates, not hand-written `extern "system"` blocks**: `windows-sys` for plain C-style calls, `windows`/`windows-core` for COM/WinRT, and the focused crates (`windows-registry`, `windows-threading`, …) when one covers the need. Pre-1.0 minor updates are potentially incompatible; Cargo caret requirements already exclude the next nonzero minor (for example, `0.3` excludes `0.4`). Use compatible requirements and upgrade deliberately rather than exact-pinning by default.
 - **`PCWSTR`/`PWSTR` discipline**: a `&str` becomes UTF-16 via `HSTRING::from` or `to_vec_with_nul`; never `as_ptr()` a non-nul-terminated buffer, and keep the owning allocation alive for the call.
-- **Check `windows::core::Result` / `HRESULT` with `?`** or explicit `ok_or`; a `BOOL` that is `FALSE` means call `GetLastError()` immediately, before any other call.
+- **Check `windows::core::Result` / `HRESULT` with `?`** or explicit `ok_or`. When an API documents that `BOOL` `FALSE` reports failure details through `GetLastError()`, capture the error immediately before any other call.
 - **Wrap owned `HANDLE`s in a newtype with `Drop`** calling `CloseHandle`; never `mem::forget` or hand a raw handle to multiple owners. Borrowed/pseudo-handles (`GetCurrentProcess`) are never dropped.
 - **DLL boundary portability**: only `#[repr(C)]` data crosses a DLL boundary — Rust-owned `String`/`Vec`/`Box` and any `#[repr(Rust)]` type must not be transferred between separately compiled DLLs; each DLL has its own statics, layouts, and type IDs.
 - Windows platform rules (`W` entry points only, UTF-16 discipline, paths, locking, failure values) follow the ferris-windows skill — load it alongside this one.
@@ -72,6 +72,6 @@ pub fn foo() {}
 - Profile and optimize the hot path early; optimize for throughput (batch work) rather than micro empty cycles; long-running loops expose yield points.
 - Libraries avoid global statics; system calls sit behind traits so they can be mocked.
 - Split the crate when in doubt; features are additive and libraries work out of the box (no required config).
-- **Edition 2024 module layout.** Manifests set `edition = "2024"`; module `foo` lives in `foo.rs` with its submodules under `foo/` — `foo/mod.rs` never appears, including when migrating older crates.
+- **Edition 2024 module layout is the unconstrained-project default.** New or unconstrained house crates set `edition = "2024"` and place module `foo` in `foo.rs` with submodules under `foo/`. Existing repositories retain their supported edition/MSRV and established layout unless a migration is requested.
 - Don't glob re-export; don't leak external types through public signatures. Complex construction goes through builders; essential functionality lives on inherent methods. Public APIs follow the Rust API Guidelines checklist.
 - Static verification before hand-off: `cargo fmt --check`, `cargo clippy -- -D warnings`, `cargo test` (smallest targeted subset first).
