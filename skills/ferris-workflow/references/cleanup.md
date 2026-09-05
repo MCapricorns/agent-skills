@@ -1,33 +1,21 @@
-# Cleanup and Simplification
+# Cleanup and Deletion Proof
 
-Read for explicit cleanup or a read-only deletion audit, not the routine diff-local hygiene pass. A cleanup request authorizes proven in-scope cuts without per-item approval; a survey authorizes no edits. Inspect `git status` and preserve unrelated changes.
+For explicit cleanup or a read-only audit, not routine diff hygiene. Cleanup permits proven in-scope cuts without per-item approval; an audit permits no edits.
 
-## Prove a cut
+## Before a cut
 
-Search hits, analyzer warnings, and earlier reports are leads. Before deleting, establish all of:
+- **Reachability:** classify consumers as production, support-only, or unresolved. Check entrypoints, configuration, registration/reflection, codegen, string dispatch, external callers, and persisted keys where applicable. Tests/examples may document public contracts; neither empty searches nor green tests prove absence of consumers. Unresolved reachability blocks deletion.
+- **Contract/history:** read callers and decision rationale. Compare ownership, behavior, ordering, errors, and side effects, not textual similarity; quiet history is not disuse. Name the behavior being surrendered and a runnable check that would expose a mistaken cut.
+- **Protected surfaces:** do not remove security controls, trust-boundary validation, accessibility, data-loss protection, durable compatibility, public APIs, or resource-quiescence cleanup without explicit approval. Generated/vendor files, fixtures, and migrations are not ordinary dead code. Keep and explain anything with a surviving consumer/rationale or unresolved product decision.
 
-1. **Consumers and reachability:** classify references as production, support-only, or unresolved. Tests and examples alone do not establish a production consumer, but may document a public contract. Trace entrypoints, configuration, registration, reflection, codegen, string dispatch, external packages, and persisted keys wherever applicable. Unresolved reachability blocks deletion.
-2. **Contract and history:** read relevant callers and decision history; identify who creates, mutates, cancels, disposes, and observes the state. Compare behavior, ordering, errors, and side effects, not textual similarity. A quiet history is not proof of disuse.
-3. **Decisive check:** name the behavior the cut gives up and a runnable check that would expose a mistaken cut. Resolve the contract first; passing tests alone cannot prove absence of consumers.
+## Simplify the owning layer
 
-Never remove security controls, trust-boundary validation, accessibility, data-loss protection, durable-data compatibility, public APIs, or resource-quiescence cleanup without explicit approval. Generated, vendored, fixture, and migration surfaces are not ordinary dead-code targets. If the founding reason still stands, a consumer remains, or the cut is a product decision, keep it and report why.
+Prefer deletion, then a canonical helper/platform facility. Consolidate only matching contracts and ownership; retain intentional differences without weakening types, errors, ordering, performance, or security. Remove forwarding-only/speculative layers, not move their complexity behind another coordinator. Keep feature logic in its owner and split coherent modules before 1000 lines.
 
-## Remove complexity, not just lines
+Orchestration changes need understood independence, atomicity, ordering, and failure behavior. For lifecycle guards or state, apply the lifecycle reference linked from SKILL.md. Propose cross-ownership or public-contract changes rather than expanding scope silently.
 
-- Prefer deletion, then an existing canonical helper or platform facility. Remove dead switches, exports, configuration, dependencies, and docs when their implementation is already gone.
-- Consolidate duplication only when contracts and ownership match. Keep copies that intentionally differ or evolve independently; do not weaken types, errors, ordering, performance, or security to unify them.
-- Delete forwarding-only layers and speculative abstractions. Simplify the state model before introducing another helper, policy object, or coordinator.
-- Keep feature logic in its owning layer and boundaries explicit. Split files before 1000 lines into coherent modules; do not move the same complexity behind a thin wrapper.
-- Improve orchestration only where independence, atomicity, ordering, and failure behavior are understood. For lifecycle state or guards, use the lifecycle reference linked from SKILL.md before consolidating.
+## Finish the cut
 
-Apply behavior-preserving changes within scope. Propose cross-ownership or public-contract changes instead of silently expanding the task.
+Remove obsolete declarations, implementation, callers, config/exports/dependencies, dedicated tests, and affected docs/inventories together. Preserve coverage of surviving behavior. Carry still-useful design rationale/rejected alternatives into successor records, repair links, and leave immutable history intact.
 
-## Apply and verify
-
-Work in reviewable batches. Remove each obsolete contract end to end: declaration, implementation, callers, config, exports, dedicated tests, docs, examples, and affected inventories. Preserve coverage for surviving observable boundaries. Synchronize directly affected comments and README text, not unrelated documentation.
-
-If a cut displaces a design record, preserve still-useful rationale and rejected alternatives in its successor, repair links, and leave immutable history alone. Keep records whose rationale still applies.
-
-Revalidate imported findings against the current code and inspect the integrated diff; isolated verification does not cover a merge. Re-search removed names and stale docs, then run decisive checks and the repository's relevant broader gates. Never weaken a meaningful check to force a cut through; repair or revert the failing batch.
-
-Report removed/consolidated contracts, measurable reduction, behavior tradeoffs, checks run, and unresolved blockers. For surveys, separate confidence from benefit and name each missing fact and decisive check; disclose uncovered scope. Pure-code changes can be reversed from the diff; persisted-data or shipped-artifact changes need an explicit recovery procedure. Deletion volume is not a quality score.
+Revalidate imported findings and the integrated diff. Re-search removed names/stale docs, run decisive checks and relevant repository gates, and repair or revert failing batches rather than weakening checks. Report contracts removed, measured reduction, tradeoffs, checks, blockers, and uncovered scope; audits distinguish confidence from benefit and name missing evidence. Persisted-data or shipped-artifact changes need an explicit recovery procedure; a Git diff only reverses code. Deletion volume is not a quality score.

@@ -1,24 +1,19 @@
 # Tests That Catch Breaks
 
-## Choose an observable contract
+## Contract, not implementation
 
-- Name the realistic production break the test must catch, then exercise the real behavior at the smallest useful boundary. Test the route, query, payload, state change, or failure policy your code owns, not framework internals.
-- Derive expectations independently: hand-checked literals/examples or an independent oracle. Never compute expected values through the implementation or its helpers.
-- Avoid change detectors: private structure, source-text matching, or incidental wording. Exact bytes, messages, and constants are valid assertions when they are the public contract, not merely today's implementation.
-- Keep test-only helpers in test utilities, not production APIs. Prefer table-driven cases when they express one contract clearly; do not split a cohesive scenario merely because its name contains "and".
+Name the production break and exercise the smallest real boundary that owns it. Derive expectations independently, not through production helpers. Source-text/private-structure assertions are change detectors unless that representation is the public contract; exact bytes/messages are valid when promised.
 
-## Prove sensitivity, then verify
+Keep helpers test-only. Use tables for cases of one contract, not forced splits of cohesive scenarios.
 
-1. Run each new test against the missing/broken behavior and require the intended failure, not a setup or compilation error. For already-working behavior, introduce a realistic temporary fault and confirm the test catches it.
-2. Restore the intended implementation and run the test green. Never weaken, skip, or delete a meaningful check to pass; a genuinely wrong expectation needs a stated contract reason and a separate correction.
-3. Check realistic mutations in the changed behavior: a swapped branch, wrong boundary, missing side effect, or empty-input bug. Use the project's mutation tool when available, otherwise mutate by hand. Earlier fault-injection runs can satisfy the same check; do not repeat equivalent mutations as a finishing ritual. Restore all mutations and run affected checks on the final state.
+## Sensitivity
 
-A surviving mutant is a lead: distinguish equivalent behavior from a real gap. Execution coverage alone does not establish sensitivity. Report any proof that could not be run rather than treating it as passed.
+- Run each new test against missing/broken behavior: it must fail for the intended reason, not setup or compilation. For already-working behavior, inject a realistic temporary fault.
+- Probe changed branches, boundaries, side effects, and empty-input behavior using the project's mutation tool or manual mutations. The same fault run can prove sensitivity; do not repeat equivalent mutations as ritual. Distinguish equivalent survivors from genuine coverage gaps.
+- Restore the implementation and all mutations, then run affected checks green. Never weaken meaningful assertions to pass; explain and separately correct genuinely wrong expectations. Report sensitivity checks that could not run.
 
-## Select doubles and properties deliberately
+## Doubles and properties
 
-Mock only the external/slow boundary below the behavior under test. Keep the component real and model the relevant dependency contract faithfully, including consumed fields and failure behavior. An assertion that a configured mock returned its configured value proves nothing. An interaction assertion can be valid when the interaction itself is the contract, such as sending one correctly addressed request; use integration coverage where a double cannot prove compatibility.
+Mock below the behavior under test, at the external/slow boundary. Model consumed fields and failure behavior faithfully; configured mock output alone proves nothing. Interactions are valid assertions when they are the contract, such as one correctly addressed request. Use integration coverage where a double cannot establish compatibility.
 
-When exact expectations are hard to derive, combine concrete examples with generated properties or an independent reference implementation. Round-trip properties alone can miss matching encoder/decoder bugs; add known valid/invalid examples and invariants not shared by both sides.
-
-Keep time, randomness, and resources controlled. Wait for observable conditions with bounded timeouts rather than arbitrary sleeps; diagnose flaky ordering using the debugging reference linked from SKILL.md instead of retrying it away.
+Combine generated properties with known valid/invalid examples or an independent oracle. Round trips can hide matching encoder/decoder bugs. Control time, randomness, and resources; wait for observable conditions with bounded timeouts instead of sleeps or retrying flaky tests away.

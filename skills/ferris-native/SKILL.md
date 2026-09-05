@@ -1,23 +1,20 @@
 ---
 name: ferris-native
-description: C++ and Rust source, API, ownership, unsafe/FFI, async, performance, dependencies, and build work, including Cargo, compiler/linker fixes, and MSBuild. Windows platform and shell rules belong to ferris-windows.
+description: C++ and Rust engineering for ownership, unsafe/FFI, async cancellation, performance, dependencies, and compiler/linker or Cargo/MSBuild changes.
 ---
 
-# C++ and Rust Development
+# Native Engineering
 
-## Load the applicable language
+| Change | Read |
+|--------|------|
+| C++ | [references/cpp.md](./references/cpp.md) |
+| Rust | [references/rust.md](./references/rust.md) |
+| Mixed-language boundary | Both, especially ABI, allocation/release, errors, and lifetimes |
 
-- **C++ edits or review:** read the applicable sections of [references/cpp.md](./references/cpp.md).
-- **Rust edits or review:** read the applicable sections of [references/rust.md](./references/rust.md).
-- **Mixed-language boundary:** read both, concentrating on ABI, allocation/release ownership, errors, and lifetimes.
-- **Windows targets or build scripts:** also apply ferris-windows. Do not load Windows details for a non-Windows-only task.
+Repository compiler/MSRV, standard/edition, build system, dependency policy, and conventions take precedence. House defaults apply only to unconstrained projects, not unsolicited migrations. Check installed toolchain and current vendor support when adopting a feature; a calendar year is not a support matrix.
 
-## Shared discipline
+- Reuse canonical helpers and resource owners rather than adding wrappers, runtimes, builders, or crate splits without a consumer.
+- Preserve actionable errors, safety/compatibility guarantees, and public ownership, threading, allocation, and failure contracts. Document non-obvious obligations; do not hide failures behind defaults or ignored results.
+- Measure the workload before specializing storage or scheduling. Zero-copy, arenas, batching, and concurrency must preserve lifetimes, backpressure, ordering, cancellation, and promised allocation/latency bounds.
 
-1. Respect the repository's supported compiler/MSRV, standard/edition, build/dependency policy, and conventions. House defaults are for new or unconstrained projects, not permission to migrate existing code.
-2. Make ownership and lifetime explicit. Prefer RAII/safe wrappers; do not duplicate owners, retain dangling views, or release asynchronous resources before completion. Document public contracts and non-obvious failure, threading, allocation, and unsafe obligations.
-3. Propagate actionable errors or handle them explicitly. Do not hide failure behind a default, an ignored result, or an incorrect `noexcept`/panic policy. Preserve existing safety and compatibility guarantees.
-4. Reuse the canonical helper, standard library, or established dependency before hand-rolling. Do not force a new wrapper, runtime, builder, or crate split without a concrete need.
-5. Measure the actual workload before specializing. Zero-copy, arenas, concurrency, and batching must respect ownership, backpressure, ordering, and cancellation; they are not universal defaults. Preserve promised allocation/latency contracts.
-
-Use ferris-workflow for debugging, test design, final checks, and cleanup. Consult current vendor documentation when a change depends on API or toolchain availability; reusable guidance should not predict release support.
+For Windows APIs or scripts, also apply ferris-windows. Use ferris-workflow for diagnosis, tests, verification, and cleanup; load only references relevant to the task.

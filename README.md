@@ -1,59 +1,55 @@
 # ferris-skills
 
-A compact, cross-agent engineering skill collection. Three entry points share no mandatory loading chain: workflow, native languages, and Windows. Each loads only the references needed for the current task. Compatible with agents supporting the [Agent Skills format](https://agentskills.io/specification), including Pi and Claude Code.
+Three cross-agent engineering skills focused on house choices and easily missed contracts, not language tutorials or generic coding advice. Compatible with the [Agent Skills format](https://agentskills.io/specification), including Pi and Claude Code.
+
+Primary development environment: **Windows with PowerShell 7 (`pwsh`)**. Command examples use PowerShell; other hosts and legacy shells are compatibility targets, not defaults.
 
 ## Skills
 
-| Skill | Responsibility | Load only when needed |
-|-------|----------------|-----------------------|
-| [ferris-workflow](skills/ferris-workflow/SKILL.md) | Debugging, test design, completion evidence, diff hygiene, and cleanup | Debugging, tests, deletion proof, lifecycle/race analysis |
-| [ferris-native](skills/ferris-native/SKILL.md) | C++ and Rust ownership, APIs, unsafe/FFI, performance, dependencies, and builds | C++ or Rust details; both for mixed-language boundaries |
-| [ferris-windows](skills/ferris-windows/SKILL.md) | Windows paths, filesystem, encoding, DLLs, privileges, system APIs, and PowerShell/batch | Platform and encoding edge cases |
+| Skill | Use for | On-demand references |
+|-------|---------|----------------------|
+| [ferris-workflow](skills/ferris-workflow/SKILL.md) | Debugging, test design, completion evidence, and cleanup | Debugging, test sensitivity, deletion proof, lifecycle/races |
+| [ferris-native](skills/ferris-native/SKILL.md) | C++/Rust ownership, unsafe/FFI, async, performance, and builds | C++ or Rust; both for mixed-language boundaries |
+| [ferris-windows](skills/ferris-windows/SKILL.md) | PowerShell 7 and Windows platform/API boundaries | Paths, share modes, DLL search, encoding, privilege, GUI |
 
-Examples: a Python regression uses workflow, not native or Windows rules. A Linux Rust change adds native's Rust reference, not C++ details. Windows C++ work uses all three entry points but only the relevant references.
+Load by task, not by chain: a Python regression needs workflow, not native; Linux Rust needs no Windows rules. References link directly from their entry point.
 
 ## Design rules
 
-- **Short descriptions route tasks.** They are always in context; implementation detail belongs in the body or a reference.
-- **One owner per concern.** Workflow owns verification; native owns language details; Windows owns platform contracts. References link directly from their skill entry point.
-- **No ritual loading.** A small fix does not require a deep-cleanup investigation. Current-state evidence can serve multiple claims without rerunning unchanged checks.
-- **Prefer contracts over blanket prescriptions.** Keep repository conventions and safety guarantees. Specialize ownership, concurrency, allocation, and dependencies only for a concrete requirement; check installed toolchain/API support instead of embedding release predictions.
-- **Keep verification real.** Preserve regression sensitivity, deletion proof, security/compatibility boundaries, and meaningful checks. Less instruction text is not evidence of better task success.
+- **Keep the delta over model knowledge.** Retain house preferences and consequential traps; omit syntax tutorials and repeated explanations. Descriptions route tasks without repeating reference content.
+- **One concern, one owner.** Workflow owns evidence/cleanup, native owns language contracts, Windows owns platform behavior. Read only relevant references and reuse current-state evidence.
+- **Support, not release predictions.** Repository conventions and supported compiler/MSRV/runtime win. Check current vendor documentation when adopting a feature; legacy workarounds stay conditional.
+- **Preserve guarantees.** Shorter instructions must retain regression sensitivity, deletion proof, security/compatibility boundaries, and meaningful checks. Text reduction alone does not establish better model behavior.
 
-This structure follows the official [skill-authoring guidance](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices) on concise instructions and progressive disclosure.
+See the official [skill-authoring guidance](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices) for concision and progressive disclosure.
 
-Validate locally with `python scripts/validate_skills.py`. CI runs the same validator: frontmatter/YAML safety, name/directory agreement, loader description limits, local links/reference mentions, orphan references, and README coverage. These checks validate packaging, not model behavior.
+Run `python scripts/validate_skills.py`. CI uses the same validator for frontmatter/YAML safety, naming/description limits, local references, orphan references, and README coverage. It checks packaging, not model effectiveness.
 
 ## Install and update
 
 Interactive installation selects skills, agents, and scope:
 
-```bash
-npx skills add github:MCapricorns/ferris-skills
+```powershell
+npx skills add github:MCapricorns/agent-skills
 ```
 
-List or select global skills:
+List, install all globally, or update global installations:
 
-```bash
-npx skills add github:MCapricorns/ferris-skills -l
-npx skills add github:MCapricorns/ferris-skills -s ferris-workflow -g
-npx skills add github:MCapricorns/ferris-skills -s '*' -g
+```powershell
+npx skills add github:MCapricorns/agent-skills -l
+npx skills add github:MCapricorns/agent-skills -s '*' -g
 npx skills update -g
 ```
 
-Add `--copy` when symlinks are unsuitable. Manual installation: copy the desired `skills/<name>/` directories into `~/.agents/skills/` or the agent's own skill directory.
+Use `-s ferris-workflow` to select one skill. Add `--copy` if symlinks are unsuitable. Manual installation: copy desired `skills/<name>/` directories into `~/.agents/skills/` or the agent's own skill directory. Reload skills or restart the agent after updating.
 
 ### Migrating from six skills
 
-- `ferris-audit`, `ferris-debug`, and `ferris-tests` become `ferris-workflow`.
-- `ferris-cpp` and `ferris-rust` become `ferris-native`.
-- `ferris-windows` keeps its name.
+`ferris-audit`, `ferris-debug`, and `ferris-tests` become `ferris-workflow`; `ferris-cpp` and `ferris-rust` become `ferris-native`; `ferris-windows` keeps its name. Updating existing names may not install replacements or remove retired names. Install replacements for the same agents/scope before removing old names:
 
-An update may refresh existing names without installing replacements or removing retired names. Install the three current skills for the same agents/scope, then remove the five retired names to prevent duplicate instructions:
-
-```bash
-npx skills add github:MCapricorns/ferris-skills -s ferris-workflow ferris-native ferris-windows -g
+```powershell
+npx skills add github:MCapricorns/agent-skills -s ferris-workflow ferris-native ferris-windows -g
 npx skills remove ferris-audit ferris-debug ferris-tests ferris-cpp ferris-rust -g
 ```
 
-Update explicit skill references in your own agent/project instructions, and reload skills or restart the agent after migration. No compatibility stubs remain to keep obsolete triggers active.
+Update explicit references in agent/project instructions and reload. No compatibility stubs keep retired triggers active.
