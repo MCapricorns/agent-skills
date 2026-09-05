@@ -30,14 +30,14 @@ Run `python scripts/validate_skills.py`. CI uses the same validator for frontmat
 Interactive installation selects skills, agents, and scope:
 
 ```powershell
-npx skills add github:MCapricorns/agent-skills
+npx skills add github:MCapricorns/ferris-skills
 ```
 
 List, install all globally, or update global installations:
 
 ```powershell
-npx skills add github:MCapricorns/agent-skills -l
-npx skills add github:MCapricorns/agent-skills -s '*' -g
+npx skills add github:MCapricorns/ferris-skills -l
+npx skills add github:MCapricorns/ferris-skills -s '*' -g
 npx skills update -g
 ```
 
@@ -48,7 +48,7 @@ Use `-s ferris-workflow` to select one skill. Add `--copy` if symlinks are unsui
 `ferris-audit`, `ferris-debug`, and `ferris-tests` become `ferris-workflow`; `ferris-cpp` and `ferris-rust` become `ferris-native`; `ferris-windows` keeps its name. Updating existing names may not install replacements or remove retired names. Install replacements for the same agents/scope before removing old names:
 
 ```powershell
-npx skills add github:MCapricorns/agent-skills -s ferris-workflow ferris-native ferris-windows -g
+npx skills add github:MCapricorns/ferris-skills -s ferris-workflow ferris-native ferris-windows -g
 npx skills remove ferris-audit ferris-debug ferris-tests ferris-cpp ferris-rust -g
 ```
 
