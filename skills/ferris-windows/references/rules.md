@@ -1,28 +1,39 @@
-# Windows Rules — Rationale
+# Windows Platform Details
 
-Read when a rule in SKILL.md needs unpacking.
+Read only the sections the change needs. Confirm behavior against the actual API/runtime and supported Windows versions.
 
-## Platform-rule rationale
+## Paths, names, and loading
 
-- **`\\?\` and MAX_PATH**: the 260-char ceiling applies to most file APIs unless long paths are enabled — which needs *both* the machine policy (`LongPathsEnabled=1`) and a `longPathAware` manifest, and Explorer plus most third-party apps still don't handle long paths. `\\?\` remains the unconditional fallback; note it disables normalization — fully-qualified backslash paths only, no relative segments, no `.`/`..`.
-- **Case-insensitivity**: the filesystem preserves the first casing written; two files differing only in case cannot coexist, and a case-only rename needs create-temp → delete-old → rename-temp.
-- **Locking**: deleting or replacing an open file succeeds only when existing handles' share modes permit the requested operation, notably through `FILE_SHARE_DELETE`. A sharing violation means a holder denies that operation; closing the holder is one remedy, while retrying helps only if it will release the handle.
-- **DLL search order**: application dir, system dirs, then PATH (plus the working directory in legacy modes). Bare-name loads pick whichever matches first — hijack territory; `LoadLibraryExW` with an absolute path (or `LOAD_LIBRARY_SEARCH_*` flags) pins the right one.
-- **Symlinks**: Developer Mode or `SeCreateSymbolicLinkPrivilege` may be required for creation. No fallback is transparent: junctions require no privilege but work only for directories, and copies lose link/update semantics. Use a fallback only when its behavior is explicitly accepted and preserved; otherwise fail clearly.
-- **Elevation**: "run everything as administrator" disables UAC's least-privilege point; request elevation per documented admin operation (HKLM writes, services, protected files).
+- Many Win32 file APIs remove `MAX_PATH` limits when both system policy and the application manifest opt in; this does not cover every API, shell, or third-party tool. Where supported, extended paths use `\\?\C:\...` or `\\?\UNC\server\share\...`, not a blindly prefixed UNC path. They must be absolute and use backslashes without `.`/`..`; the prefix disables normal path normalization.
+- Windows normally preserves case but compares names case-insensitively; NTFS directories can opt into case sensitivity. Keep portable source trees free of case-only collisions. Use a two-step Git move for case-only renames, not a delete/recreate sequence that risks data loss.
+- Avoid reserved device names (`CON`, `PRN`, `AUX`, `NUL`, `COM1`–`COM9`, `LPT1`–`LPT9`, including extensions), trailing spaces/dots, and invalid filename characters. Do not lowercase paths as a universal identity check.
+- Deletion/replacement of open files depends on share modes and the specific operation. Identify the process/handle denying sharing, including stale processes causing linker LNK1168; do not hide a persistent holder with blind retries.
+- Use trusted absolute paths for non-system DLLs and documented `LoadLibraryExW` `LOAD_LIBRARY_SEARCH_*` flags for their dependencies, choosing only required trusted directories. The top-level DLL's path does not control all transitive loads. Avoid current-directory/PATH searching and process-wide search-path mutation around individual calls.
+- Symlinks may require Developer Mode or privilege. Junctions only cover directories; copies lose link/update semantics. Request elevation only for the specific documented administrative operation.
 
-## Console and file encoding — the mojibake cure
+## Encoding and terminal I/O
 
-Chinese text corrupts when the three layers — internal strings, bytes on the wire, terminal decode — disagree. Pin every layer explicitly:
+There are separate contracts for source literals, internal strings, and external bytes. Do not infer them from the user's locale.
 
-- **MSVC compiles BOM-less UTF-8 sources as the system ACP by default** — on a Chinese-locale system that is GBK/936, and string literals corrupt silently at compile time. Compile with `/utf-8` (sets both source and execution charset). A UTF-8 BOM also forces UTF-8 source parsing but does nothing for the execution charset.
-- **Output**: `SetConsoleOutputCP(CP_UTF8)` at startup, then write UTF-8 bytes (or `WriteConsoleW` to send UTF-16 straight to the console). `chcp 65001` does the same for the current console session only — an interactive fix, not a shipped tool's design.
-- **Input**: read keyboard input with `ReadConsoleW`; the cooked-read path does not decode UTF-8 completely on current Windows.
-- **The `activeCodePage` manifest key** (Windows 10 1903+) makes the process ACP UTF-8, so `-A` APIs and CRT narrow functions become UTF-8 — the sanctioned escape hatch for legacy narrow codebases. Prefer `W` + explicit encodings in new code. GDI does not follow per-process ACP; pre-1903 Windows silently falls back to the system page.
-- **Pipes and files have no code page** — redirection carries raw bytes; the encoding is a contract stated on both ends. Pass `CP_UTF8` explicitly (never `CP_ACP`) in every `MultiByteToWideChar`/`WideCharToMultiByte` call.
-- **Batch files**: `chcp 65001` at the top *and* save the script itself as UTF-8 — cmd parses BOM-less scripts with the OEM page.
-- **Interpreters**: Python's console I/O already goes through the W APIs (set `PYTHONUTF8=1` to extend UTF-8 to files and pipes); Node and Go emit UTF-8 by default — when mojibake still appears, the cause is a legacy console still decoding at page 936, fixed by the output rules above.
+| Boundary | Rule |
+|----------|------|
+| MSVC source and narrow literals | `/utf-8` sets source and execution encoding; a UTF-8 BOM only identifies source encoding |
+| Native console output | Prefer the runtime's Unicode terminal support or `WriteConsoleW`; when emitting UTF-8 bytes to the console, set `SetConsoleOutputCP(CP_UTF8)` |
+| Native console input | `ReadConsoleW` handles Unicode console input; redirected stdin is a byte stream requiring explicit decoding |
+| Files and pipes | State the encoding on both ends; code-page changes do not transcode redirected bytes |
+| Win32 conversion | Use an explicit code page such as `CP_UTF8`, honor error/length contracts, and do not use `CP_ACP` for durable/protocol text |
+| Legacy narrow code | An `activeCodePage` manifest can select UTF-8 on supported Windows; it is not a substitute for checking API-specific behavior, and GDI is an exception |
+| PowerShell/native boundary | `[Console]::OutputEncoding` controls native-output decoding where PowerShell decodes it; `$OutputEncoding` controls text piped to native stdin |
+| PowerShell files | Windows PowerShell 5.1 has inconsistent cmdlet defaults and emits a BOM with `-Encoding utf8`; PowerShell 7 defaults to UTF-8 without BOM. Select the writer/encoding the consumer requires |
 
-## GUI manifests
+For cmd scripts with non-ASCII text, save as UTF-8 and switch to `chcp 65001` from an ASCII line before non-ASCII commands are parsed. In PowerShell 5.1, UTF-8 scripts containing non-ASCII generally need a BOM. Do not blindly apply one file-encoding recipe to both shells.
 
-- Desktop apps declare `<dpiAwareness>PerMonitorV2</dpiAwareness>` in the manifest (not a runtime `SetProcessDpiAwareness` call) and read per-window DPI with `GetDpiForWindow`; undeclared apps blur and mis-scale on mixed-DPI multi-monitor setups.
+For new CLI styling, use virtual terminal sequences after detecting a terminal and enabling `ENABLE_VIRTUAL_TERMINAL_PROCESSING` where required. Handle non-console/redirected handles separately; do not emit styling into machine-readable output. Encoding changes are not a replacement for a correct terminal/pipe boundary.
+
+## API and GUI details
+
+Check `HRESULT` with `FAILED`/`SUCCEEDED`, `LSTATUS` against `ERROR_SUCCESS`, and each handle/pointer/Boolean against its documented failure value. Use `GetLastError()` only when that API promises meaningful details; another call can overwrite it. Match resource-specific release functions, initialize fields such as `cbSize`, and use pointer-sized types without truncation.
+
+Desktop GUI apps should declare DPI awareness in the manifest, typically `PerMonitorV2` when supported, and use per-window DPI rather than a process-wide assumption. Respect the framework's DPI setup instead of racing it with late runtime configuration.
+
+Platform references: [long paths](https://learn.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation), [case sensitivity](https://learn.microsoft.com/en-us/windows/wsl/case-sensitivity), and [DLL dependency search](https://learn.microsoft.com/en-us/windows/win32/dlls/dynamic-link-library-search-order).

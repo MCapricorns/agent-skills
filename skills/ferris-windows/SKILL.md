@@ -1,34 +1,25 @@
 ---
 name: ferris-windows
-description: Windows platform, shell, and system-interface discipline for code and builds targeting Windows. Use for Windows-targeted code even with no system call in sight; PowerShell or batch scripts; path, filesystem, console, DLL, or elevation behavior; Win32, COM, P/Invoke, or FFI integration; and Windows-specific build failures. C++ and Rust language design and style belong to ferris-cpp and ferris-rust.
+description: Windows-targeted code/builds, PowerShell or batch scripts, paths/filesystem, console encoding, DLL loading, elevation, and Win32/COM/PInvoke contracts. C++ and Rust language details belong to ferris-native.
 ---
 
-# Windows Development Discipline
+# Windows Development
 
-The platform rules apply with no system call in sight; the shell rules apply to scripts that drive a build or a tool; the system-call rules apply the moment code touches Windows. Rationale, edge cases, and Rust/FFI detail: [references/rules.md](./references/rules.md).
+Apply the relevant platform, shell, or API rules; not every Windows task needs all three. The documented API/runtime contract wins over a house default.
 
-## Platform rules (no system call required)
+## Platform and API contracts
 
-1. **Deep absolute paths get the `\\?\` prefix** — the 260-char `MAX_PATH` ceiling applies unless long paths are enabled.
-2. **Names are case-insensitive but case-preserving** — `Foo.rs` and `foo.rs` collide; case-only renames take a two-step move. Reserved device names (`CON`, `PRN`, `AUX`, `NUL`, `COM1`–`COM9`, `LPT1`–`LPT9`) are never valid filenames.
-3. **Open handles control delete and replace sharing** — the operation succeeds only when existing handles' share modes permit it, notably `FILE_SHARE_DELETE`; a sharing violation means a holder denies the requested operation. Closing that holder is one remedy; blind retry is not a fix.
-4. **Load non-system DLLs by explicit absolute path**, never by bare name — the search order will load the wrong one.
-5. **Console text is not UTF-8 by default** — the OEM code page (936 on Chinese-locale systems) renders UTF-8 bytes as mojibake: set `SetConsoleOutputCP(CP_UTF8)` at startup (or `chcp 65001` interactively) and state the encoding at every process and pipe boundary — a redirected pipe carries raw bytes with no code page. Full encoding decision table: references/rules.md.
-6. **New CLI output uses virtual terminal sequences** — enable `ENABLE_VIRTUAL_TERMINAL_PROCESSING` once at startup; classic Console API stays only for the bootstrap calls (`GetStdHandle`/`SetConsoleMode`). Keyboard input reads `ReadConsoleW` — cooked-mode UTF-8 input is still incomplete.
-7. **Treat symlink creation as fallible** — Developer Mode or privilege may be required; junctions are directory-only and copies lose link/update semantics. Use only an explicitly accepted behavior-preserving fallback, or fail clearly.
-8. **Run unelevated by default** — elevation only for documented admin operations.
+- **Paths:** long-path support depends on the API/runtime and application configuration. Use extended paths only where supported; never blindly prepend `\\?\`. Keep Unicode paths and portable filenames; assume case-insensitive defaults without assuming every directory is case-insensitive.
+- **Open files:** delete/replace behavior depends on existing share modes, notably `FILE_SHARE_DELETE`. Identify the denying holder on sharing violations; retries help only if it will release the handle.
+- **DLLs:** load non-system DLLs from trusted absolute paths and constrain dependency searching. An absolute path to the top-level DLL alone does not secure its dependencies.
+- **Text:** use Unicode `W` APIs for new code, honor bytes versus UTF-16 code units and terminators, and specify encodings at process/file/pipe boundaries. Do not use the system ANSI code page for durable or protocol text.
+- **Failure and ownership:** check documented sentinels/status values; capture `GetLastError()` immediately only where documented. Match every owned handle/buffer/COM allocation with its release operation; never release borrowed/pseudo-handles. Initialize size/version fields and preserve pointer-sized values.
+- **Privilege:** run unelevated unless the operation needs elevation. Symlink creation is fallible; directory junctions and copies are not transparent fallbacks. Use only an explicitly accepted behavior-preserving alternative or fail clearly.
 
-## System-call rules
+## Shell execution
 
-1. **Unicode `W` entry points only, never `A`**; never `CP_ACP` or ANSI encodings for durable or protocol text.
-2. **Bytes are not UTF-16 code units** — honor exact length contracts and terminators; never assume null termination when a length is supplied.
-3. **Check documented failure values** — `FAILED`/`SUCCEEDED` for `HRESULT`, `ERROR_SUCCESS` for `LSTATUS`; capture `GetLastError()` only where documented (many calls invalidate it).
-4. **RAII ownership with matching release** for handles, buffers, and COM allocations; never release borrowed or pseudo-handles. Initialize size/version fields (`cbSize`); use pointer-sized types (`DWORD_PTR`, `INT_PTR`) without truncation.
+- Check `$LASTEXITCODE` immediately after each native tool and interpret its documented codes; stop on actual failure. PowerShell cmdlet failures need PowerShell error handling, not `$LASTEXITCODE`. Batch scripts check `if errorlevel 1` for tools whose nonzero codes mean failure.
+- `&&`/`||` require PowerShell 7+. Windows PowerShell 5.1 needs separate commands and explicit checks. Do not assume POSIX quoting, globbing, or redirection semantics; prefer argument arrays and literal paths over constructed command strings.
+- Set text encodings deliberately. Console/native-pipe encodings and file encodings are separate; `-Encoding utf8` has different BOM behavior in Windows PowerShell 5.1 and PowerShell 7.
 
-## Shell and scripting rules
-
-1. **Native exit codes live in `$LASTEXITCODE`** — `$?` is a Boolean derived from native exit status; in PowerShell 7.4+, `$ErrorActionPreference` can act on native nonzero exits when `$PSNativeCommandUseErrorActionPreference` is enabled. For cross-version scripts, check numeric `$LASTEXITCODE` after each native tool and stop on failure.
-2. **`&&` and `||` require PowerShell 7+** — Windows PowerShell 5.1 chains with `;` plus an explicit code check, and no POSIX shell assumptions (globbing, quoting, `2>&1` semantics) carry over.
-3. **Declare the encoding before emitting non-ASCII** — `[Console]::OutputEncoding` decides how a native tool's output is decoded, `$OutputEncoding` what PowerShell pipes into one; `Out-File`/`Set-Content` defaults differ between 5.1 and 7, so pass `-Encoding utf8` explicitly.
-
-When a rule here conflicts with a documented contract, the documented contract wins — say so in the code comment and in the reply. Rust `windows`-crate wrapper discipline lives in ferris-rust; for languages with no house skill (C#, PowerShell), these rules plus the documented signature are the whole contract.
+Read the relevant sections of [references/rules.md](./references/rules.md) for long paths, names, DLL search, encoding/terminal output, or GUI manifests. Use ferris-native for language-specific wrappers and ferris-workflow for diagnosis, tests, and verification.

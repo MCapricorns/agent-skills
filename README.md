@@ -1,63 +1,59 @@
 # ferris-skills
 
-Personal cross-agent skill collection — the **ferris** family. Every skill is prefixed `ferris-` so the family groups together in any agent's skill list and never collides with third-party skills. Works with ZCode, Claude Code, Cursor, and any agent that discovers `~/.agents/skills/`.
-
-## Design rules
-
-Every skill here follows the same contract, tuned for reliable triggering:
-
-- **The description is the trigger.** It states the skill's purpose in one clause, then generalized activation categories, a few discriminative terms, and boundaries with neighboring skills. It routes rather than summarizing the body. Keep it lean — it rides in every session's context.
-- **One owner per rule.** Each concern lives in exactly one skill; neighbors point to it by name instead of restating it, and descriptions carry negative triggers ("X belongs to skill-y") so skills never fight over the same task.
-- **Every skill uses progressive disclosure.** SKILL.md carries the load-bearing rules and concise contract context; expanded rationale, edge cases, and examples live in `references/` and load only when needed.
-
-| Concern | Owner |
-|---------|-------|
-| Proof behind "done / fixed / passing" claims, diff hygiene at commit time, dead-code cleanup, simplification audits | ferris-audit |
-| Root-cause process when anything is broken | ferris-debug |
-| Test quality, mocks, regression tests | ferris-tests |
-| Windows platform rules, PowerShell/batch scripting, Win32 system-call correctness from any language | ferris-windows |
-| C++ style, design, performance, dependencies (vcpkg), MSBuild | ferris-cpp |
-| Rust style, design, async, lints | ferris-rust |
-
-CI enforces the contract mechanically — `python3 scripts/validate_skills.py` checks frontmatter shape and YAML safety, name/directory match, description length within loader limits, resolvable links and reference mentions, orphan reference files, and README coverage.
+A compact, cross-agent engineering skill collection. Three entry points share no mandatory loading chain: workflow, native languages, and Windows. Each loads only the references needed for the current task. Compatible with agents supporting the [Agent Skills format](https://agentskills.io/specification), including Pi and Claude Code.
 
 ## Skills
 
-### Discipline
+| Skill | Responsibility | Load only when needed |
+|-------|----------------|-----------------------|
+| [ferris-workflow](skills/ferris-workflow/SKILL.md) | Debugging, test design, completion evidence, diff hygiene, and cleanup | Debugging, tests, deletion proof, lifecycle/race analysis |
+| [ferris-native](skills/ferris-native/SKILL.md) | C++ and Rust ownership, APIs, unsafe/FFI, performance, dependencies, and builds | C++ or Rust details; both for mixed-language boundaries |
+| [ferris-windows](skills/ferris-windows/SKILL.md) | Windows paths, filesystem, encoding, DLLs, privileges, system APIs, and PowerShell/batch | Platform and encoding edge cases |
 
-- **ferris-audit** — the finish-line gate. No success claim without running the proving command fresh and reading its output (claims-to-proof table for tests, builds, bug fixes, requirements, performance claims, and subagent reports); and a mandatory pre-commit pass that cleans the staged diff even when nobody asks — new APIs must have same-diff consumers, structural churn rides separately from behavior changes. Explicit-intent deep cleanup applies proven cuts end to end with a proof ladder for every deletion; read-only simplification surveys rank evidence and never edit.
+Examples: a Python regression uses workflow, not native or Windows rules. A Linux Rust change adds native's Rust reference, not C++ details. Windows C++ work uses all three entry points but only the relevant references.
 
-### Process
+## Design rules
 
-- **ferris-debug** — root cause before any fix: read the evidence, reproduce reliably, diff against last-good, instrument boundaries, trace bad values to their origin, one hypothesis at a time, fix with a regression test seen red first; checks are never weakened to go green, and three failed fixes escalate to questioning the design.
-- **ferris-tests** — tests that catch real breaks: name the break first, watch every new test fail then pass, hand-derived expectations (property tests when expectations resist hand-derivation), no change detectors, mocks earn no assertions, tests frozen while implementing, mutation check before finishing.
+- **Short descriptions route tasks.** They are always in context; implementation detail belongs in the body or a reference.
+- **One owner per concern.** Workflow owns verification; native owns language details; Windows owns platform contracts. References link directly from their skill entry point.
+- **No ritual loading.** A small fix does not require a deep-cleanup investigation. Current-state evidence can serve multiple claims without rerunning unchanged checks.
+- **Prefer contracts over blanket prescriptions.** Keep repository conventions and safety guarantees. Specialize ownership, concurrency, allocation, and dependencies only for a concrete requirement; check installed toolchain/API support instead of embedding release predictions.
+- **Keep verification real.** Preserve regression sensitivity, deletion proof, security/compatibility boundaries, and meaningful checks. Less instruction text is not evidence of better task success.
 
-### House style
+This structure follows the official [skill-authoring guidance](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices) on concise instructions and progressive disclosure.
 
-- **ferris-windows** — Windows platform discipline for ANY code that runs on Windows, no API call required: MAX_PATH and `\\?\` long paths, case-insensitive filenames and reserved device names, share-mode-aware delete/replace behavior for open handles (including `FILE_SHARE_DELETE`, sharing violations, linker LNK1168), DLL search order, the full mojibake cure for console/file encoding (OEM code pages, `SetConsoleOutputCP(CP_UTF8)` vs `ReadConsoleW`, MSVC `/utf-8`, `activeCodePage` manifest, pipe boundaries), virtual terminal sequences, fallible symlink creation with only explicitly accepted behavior-preserving fallbacks, UAC elevation. Plus shell discipline for the scripts that drive builds (explicit numeric `$LASTEXITCODE` checks across PowerShell versions, no `&&` on PowerShell 5.1, explicit output encoding) and Win32 system-call correctness in any language: Unicode `W` APIs only, bytes vs UTF-16 code units, documented failure values (`HRESULT`, `LSTATUS`, `GetLastError`), RAII handle ownership, `cbSize` initialization, pointer-sized types. Rust `windows`-crate wrapper discipline lives in ferris-rust; languages with no house skill (C#, PowerShell) run on these rules alone.
-- **ferris-cpp** — house C++ discipline for new or unconstrained projects, with repository toolchain/standard, build/dependency policy, and established conventions taking precedence without weakening portable correctness: latest-standard syntax (concepts, `<format>`, `std::span`, `std::expected`), PascalCase/snake_case naming, trailing return types with `auto` by default, `noexcept`/`[[nodiscard]]` contracts, contract comments, fail-fast init with EH-free hot paths, zero-copy borrowing (`std::pmr` arenas, view-lifetime rules), C++20-coroutine async over IOCP, what the toolset ships before any third party (and vcpkg manifest mode for the rest), and vswhere/MSBuild build discipline.
-- **ferris-rust** — house Rust discipline for new or unconstrained projects, with repository toolchain/MSRV, edition, build/dependency policy, and established conventions taking precedence without weakening portable correctness: panic = programming bug vs `Result` = situational failure, errors never swallowed (`.ok()?`, `let _ =`, `unwrap_or*` are all banned), distinct `unsafe` definitions for caller/access/implementor obligations (`unsafe fn`/`static`/`trait`) and context-specific discharge proofs for blocks, impls, extern declarations, and unsafe attributes, no weasel-word names, `#[expect]` lint overrides, edition 2024 with the `foo.rs` + `foo/` layout, M-CANONICAL-DOCS documentation, API design rules, established crates over hand-rolling, and tokio-based async/zero-copy discipline (no guards across `.await`, `spawn_blocking` for blocking work, borrowed parses, `Bytes` views). Windows FFI defers to ferris-windows for platform rules.
+Validate locally with `python scripts/validate_skills.py`. CI runs the same validator: frontmatter/YAML safety, name/directory agreement, loader description limits, local links/reference mentions, orphan references, and README coverage. These checks validate packaging, not model behavior.
 
-## Install
+## Install and update
 
-Interactive — the CLI asks which skills, which agents, and global or project scope:
+Interactive installation selects skills, agents, and scope:
 
 ```bash
 npx skills add github:MCapricorns/ferris-skills
 ```
 
-Headless picks:
+List or select global skills:
 
 ```bash
-npx skills add github:MCapricorns/ferris-skills -l                  # list before choosing
-npx skills add github:MCapricorns/ferris-skills -s ferris-audit -g  # one skill, global
-npx skills add github:MCapricorns/ferris-skills -s '*' -g           # every skill, global
-```
-
-Add `--copy` to copy files instead of symlinking. Update later:
-
-```bash
+npx skills add github:MCapricorns/ferris-skills -l
+npx skills add github:MCapricorns/ferris-skills -s ferris-workflow -g
+npx skills add github:MCapricorns/ferris-skills -s '*' -g
 npx skills update -g
 ```
 
-Manual: copy `skills/<name>/` into `~/.agents/skills/` (or your agent's skills directory).
+Add `--copy` when symlinks are unsuitable. Manual installation: copy the desired `skills/<name>/` directories into `~/.agents/skills/` or the agent's own skill directory.
+
+### Migrating from six skills
+
+- `ferris-audit`, `ferris-debug`, and `ferris-tests` become `ferris-workflow`.
+- `ferris-cpp` and `ferris-rust` become `ferris-native`.
+- `ferris-windows` keeps its name.
+
+An update may refresh existing names without installing replacements or removing retired names. Install the three current skills for the same agents/scope, then remove the five retired names to prevent duplicate instructions:
+
+```bash
+npx skills add github:MCapricorns/ferris-skills -s ferris-workflow ferris-native ferris-windows -g
+npx skills remove ferris-audit ferris-debug ferris-tests ferris-cpp ferris-rust -g
+```
+
+Update explicit skill references in your own agent/project instructions, and reload skills or restart the agent after migration. No compatibility stubs remain to keep obsolete triggers active.
