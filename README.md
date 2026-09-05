@@ -8,18 +8,19 @@ Primary development environment: **Windows with PowerShell 7 (`pwsh`)**. Command
 
 | Skill | Use for | On-demand references |
 |-------|---------|----------------------|
-| [ferris-workflow](skills/ferris-workflow/SKILL.md) | Debugging, test design, completion evidence, and cleanup | Debugging, test sensitivity, deletion proof, lifecycle/races |
-| [ferris-native](skills/ferris-native/SKILL.md) | C++/Rust ownership, unsafe/FFI, async, performance, and builds | C++ or Rust; both for mixed-language boundaries |
-| [ferris-windows](skills/ferris-windows/SKILL.md) | PowerShell 7 and Windows platform/API boundaries | Paths, share modes, DLL search, encoding, privilege, GUI |
+| [ferris-workflow](skills/ferris-workflow/SKILL.md) | Diagnosing a failure, writing a sensitive test, proving a deletion, or simplifying lifecycle/races | Debugging, test sensitivity, deletion proof, lifecycle/races |
+| [ferris-native](skills/ferris-native/SKILL.md) | C++/Rust ownership, unsafe/FFI, async cancellation, or compiler/linker and Cargo/MSBuild failures | C++ or Rust; both for mixed-language boundaries |
+| [ferris-windows](skills/ferris-windows/SKILL.md) | Windows paths, encoding, DLL loading, elevation, or Win32/COM/PInvoke | Paths, share modes, DLL search, encoding, privilege, GUI |
 
 Load by task, not by chain: a Python regression needs workflow, not native; Linux Rust needs no Windows rules. References link directly from their entry point.
 
 ## Design rules
 
-- **Keep the delta over model knowledge.** Retain house preferences and consequential traps; omit syntax tutorials and repeated explanations. Descriptions route tasks without repeating reference content.
-- **One concern, one owner.** Workflow owns evidence/cleanup, native owns language contracts, Windows owns platform behavior. Read only relevant references and reuse current-state evidence.
-- **Support, not release predictions.** Repository conventions and supported compiler/MSRV/runtime win. Check current vendor documentation when adopting a feature; legacy workarounds stay conditional.
-- **Preserve guarantees.** Shorter instructions must retain regression sensitivity, deletion proof, security/compatibility boundaries, and meaningful checks. Text reduction alone does not establish better model behavior.
+- **Keep the delta over model knowledge.** House preferences and consequential traps stay; syntax tutorials, investigation itineraries, and generic caution do not.
+- **Descriptions only say when.** A short trigger for the concrete action, not the whole domain, and not "before every commit." The body is a router; read only the reference the task needs.
+- **One concern, one owner.** Workflow owns diagnosis/tests/cleanup, native owns language contracts, Windows owns platform behavior.
+- **Finish requested work.** Do not require a review stop after a first draft. Ask only at decisions the user would actually want to make. Repository conventions win; check current vendor docs when adopting a feature.
+- **Preserve guarantees.** Shorter text must keep regression sensitivity, deletion proof, security/compatibility boundaries, and meaningful checks.
 
 See the official [skill-authoring guidance](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices) for concision and progressive disclosure.
 

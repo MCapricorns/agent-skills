@@ -1,5 +1,7 @@
 # Windows Boundary Traps
 
+Read the section the task needs. Runtime/API behavior wins over house defaults.
+
 ## Paths, open files, and DLLs
 
 - Long-path opt-in (system policy plus application manifest) covers many Win32 file APIs, not every API, shell, or runtime. Supported extended paths are absolute `\\?\C:\...` or `\\?\UNC\server\share\...`, with backslashes and no `.`/`..`; the prefix disables normal normalization. Never blindly prepend it.

@@ -1,6 +1,6 @@
 ---
 name: ferris-native
-description: C++ and Rust engineering for ownership, unsafe/FFI, async cancellation, performance, dependencies, and compiler/linker or Cargo/MSBuild changes.
+description: C++ and Rust ownership, unsafe/FFI, async cancellation, and build contracts. Use when a change hinges on those surfaces or on a compiler, linker, Cargo, or MSBuild failure.
 ---
 
 # Native Engineering
@@ -11,10 +11,8 @@ description: C++ and Rust engineering for ownership, unsafe/FFI, async cancellat
 | Rust | [references/rust.md](./references/rust.md) |
 | Mixed-language boundary | Both, especially ABI, allocation/release, errors, and lifetimes |
 
-Repository compiler/MSRV, standard/edition, build system, dependency policy, and conventions take precedence. House defaults apply only to unconstrained projects, not unsolicited migrations. Check installed toolchain and current vendor support when adopting a feature; a calendar year is not a support matrix.
+Repository compiler/MSRV, standard/edition, build system, dependency policy, and conventions win. House defaults apply only to unconstrained projects. Check the installed toolchain and current vendor docs when adopting a feature.
 
-- Reuse canonical helpers and resource owners rather than adding wrappers, runtimes, builders, or crate splits without a consumer.
-- Preserve actionable errors, safety/compatibility guarantees, and public ownership, threading, allocation, and failure contracts. Document non-obvious obligations; do not hide failures behind defaults or ignored results.
-- Measure the workload before specializing storage or scheduling. Zero-copy, arenas, batching, and concurrency must preserve lifetimes, backpressure, ordering, cancellation, and promised allocation/latency bounds.
+Preserve public ownership, threading, allocation, and failure contracts. Do not hide failures behind defaults or ignored results.
 
-For Windows APIs or scripts, also apply ferris-windows. Use ferris-workflow for diagnosis, tests, verification, and cleanup; load only references relevant to the task.
+For Windows APIs or scripts, also apply ferris-windows. Use ferris-workflow for diagnosis, tests, and cleanup; load only the references the task needs.

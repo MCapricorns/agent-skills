@@ -4,12 +4,12 @@ Use before consolidating guards, defensive copies, cancellation, cleanup, or cro
 
 ## Same-looking state can enforce different guarantees
 
-For each validator, copy, retry, rollback, or containment wrapper, trace entry, subsequent mutation, lifetime, and the failure prevented. For each flag, promise, queue, callback, or controller, identify writers/readers, transitions, failure windows, and cleanup obligations. Hostile test inputs alone neither establish nor disprove a production contract.
+For each validator, copy, retry, rollback, or wrapper, name the failure it prevents and the lifetime it covers. For each flag, queue, callback, or controller, name writers, readers, transitions, and cleanup. Hostile tests neither prove nor disprove a production contract.
 
-Consolidate only when ownership, transitions, and failure guarantees match and survive elsewhere. Atomic publication, rollback, callback isolation, terminal-state arbitration, worker ownership, and durable completion are distinct. If state is truly redundant, retain the source the strictest consumer trusts rather than coordinating two copies.
+Consolidate only when ownership, transitions, and failure guarantees match. Atomic publication, rollback, callback isolation, terminal-state arbitration, worker ownership, and durable completion are distinct. If state is redundant, keep the copy the strictest consumer trusts.
 
 ## Cancellation is not quiescence
 
-Trace resources from creation through cancellation and release. `dispose`, abort requests, and stopped flags do not prove that timers, listeners, streams, workers/subprocesses, promises, queued retries, or buffered writes have finished. Identify what can still publish, persist, hold resources, or invoke caller code after the terminal point, and the observation that would catch it.
+`dispose`, abort, and stopped flags do not prove timers, listeners, streams, workers, promises, queued retries, or buffered writes have finished. Name what can still publish, persist, or call back after the terminal point.
 
-Exercise transitions with their driver, precondition, outcome, and late-event handling: canceled-before-start, mid-flight cancellation, simultaneous endings, partial publication, and repeated cleanup. Cut a branch only when its ordering guarantee survives elsewhere or has no consumer; happy-path success cannot prove these orderings.
+Cut a branch only when its ordering guarantee survives elsewhere or has no consumer. Happy-path success does not prove canceled-before-start, mid-flight cancel, simultaneous endings, or repeated cleanup.
