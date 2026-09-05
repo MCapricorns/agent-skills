@@ -11,7 +11,7 @@ Read the relevant sections of [references/rules.md](./references/rules.md) for p
 
 ## Shell execution
 
-- Check `$LASTEXITCODE` immediately after each native tool and interpret its documented codes; stop on actual failure. Cmdlet errors require PowerShell error handling, not `$LASTEXITCODE`.
+- Chain success-dependent native commands with `&&`; use explicit status handling only for special exit-code contracts or recovery. Cmdlet error handling is separate.
 - Use argument arrays and literal paths instead of constructed command strings. PowerShell is not a POSIX shell; quoting, wildcard expansion, and native argument passing follow the host's rules.
 
 Use ferris-native for language ownership/build details and ferris-workflow for diagnosis, tests, and verification.
