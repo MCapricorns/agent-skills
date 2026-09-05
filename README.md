@@ -1,6 +1,6 @@
 # ferris-skills
 
-Three cross-agent engineering skills focused on house choices and easily missed contracts, not language tutorials or generic coding advice. Compatible with the [Agent Skills format](https://agentskills.io/specification), including Pi and Claude Code.
+Three engineering skills plus one instruction-authoring skill, focused on house choices and easily missed contracts, not language tutorials or generic coding advice. Compatible with the [Agent Skills format](https://agentskills.io/specification), including Pi and Claude Code.
 
 Primary development environment: **Windows with PowerShell 7 (`pwsh`)**. Command examples use PowerShell; other hosts and legacy shells are compatibility targets, not defaults.
 
@@ -11,14 +11,15 @@ Primary development environment: **Windows with PowerShell 7 (`pwsh`)**. Command
 | [ferris-workflow](skills/ferris-workflow/SKILL.md) | Diagnosing a failure, writing a sensitive test, proving a deletion, or simplifying lifecycle/races | Debugging, test sensitivity, deletion proof, lifecycle/races |
 | [ferris-native](skills/ferris-native/SKILL.md) | C++/Rust ownership, unsafe/FFI, async cancellation, or compiler/linker and Cargo/MSBuild failures | C++ or Rust; both for mixed-language boundaries |
 | [ferris-windows](skills/ferris-windows/SKILL.md) | Windows paths, encoding, DLL loading, elevation, or Win32/COM/PInvoke | Paths, share modes, DLL search, encoding, privilege, GUI |
+| [ferris-instruct](skills/ferris-instruct/SKILL.md) | Adding, editing, or reviewing SKILL.md, AGENTS.md, or other always-on agent instructions | Skill files, AGENTS.md, boundaries/persistence |
 
-Load by task, not by chain: a Python regression needs workflow, not native; Linux Rust needs no Windows rules. References link directly from their entry point.
+Load by task, not by chain: a Python regression needs workflow, not native; Linux Rust needs no Windows rules; a compiler fix does not load instruct. References link directly from their entry point.
 
 ## Design rules
 
 - **Keep the delta over model knowledge.** House preferences and consequential traps stay; syntax tutorials, investigation itineraries, and generic caution do not.
 - **Descriptions only say when.** A short trigger for the concrete action, not the whole domain, and not "before every commit." The body is a router; read only the reference the task needs.
-- **One concern, one owner.** Workflow owns diagnosis/tests/cleanup, native owns language contracts, Windows owns platform behavior.
+- **One concern, one owner.** Workflow owns diagnosis/tests/cleanup, native owns language contracts, Windows owns platform behavior, instruct owns standing agent instructions. Do not add a fifth skill for a one-off.
 - **Finish requested work.** Do not require a review stop after a first draft. Ask only at decisions the user would actually want to make. Repository conventions win; check current vendor docs when adopting a feature.
 - **Preserve guarantees.** Shorter text must keep regression sensitivity, deletion proof, security/compatibility boundaries, and meaningful checks.
 
@@ -42,7 +43,7 @@ npx skills add github:MCapricorns/ferris-skills -s '*' -g
 npx skills update -g
 ```
 
-Use `-s ferris-workflow` to select one skill. Add `--copy` if symlinks are unsuitable. Manual installation: copy desired `skills/<name>/` directories into `~/.agents/skills/` or the agent's own skill directory. Reload skills or restart the agent after updating.
+Use `-s ferris-workflow` or `-s ferris-instruct` to select one skill. Add `--copy` if symlinks are unsuitable. Manual installation: copy desired `skills/<name>/` directories into `~/.agents/skills/` or the agent's own skill directory. Reload skills or restart the agent after updating.
 
 ### Migrating from six skills
 
